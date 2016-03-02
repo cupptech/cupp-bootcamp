@@ -2,20 +2,16 @@ var express 	= require('express');
 var app 		= express();
 var bodyParser 	= require('body-parser');
 var mongoose 	= require('mongoose');
+var seedDB 		= require('./seeds');
+var Campground = require('./models/campground');
 
 mongoose.connect('mongodb://localhost/cupp_camp');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
 
-// SCHEMA SETUP
-var campgroundSchema = new mongoose.Schema({
-	name: String,
-	image: String,
-	description: String
-});
+seedDB();
 
-var Campground = mongoose.model('Campground', campgroundSchema);
 /*
 var campgrounds = [
 	{name: 'Camp 1', image: 'http://www.restaurantcolca.com/sites/default/files/styles/img_serviciobanner/public/camping2_0.jpg?itok=pE_mZlKV'},
@@ -72,16 +68,18 @@ app.get('/campgrounds/new', function(req, res){
 // SHOW - shows more info about one campground 
 app.get('/campgrounds/:id', function(req, res){
 	// find the campground with provided ID
-	Campground.findById(req.params.id, function(err, foundCampground){
-		if (err) {
-			console.log(err);
-		} else {
-			// render the campground
-			res.render('show', {
-				campground: foundCampground
-			});
-		}
-	});
+	Campground.findById(req.params.id)
+		.populate('comments')
+		.exec(function(err, foundCampground){
+			if (err) {
+				console.log(err);
+			} else {
+				// render the campground
+				res.render('show', {
+					campground: foundCampground
+				});
+			}
+		});
 });
 
 app.listen(3000, function(){
