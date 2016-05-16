@@ -1,0 +1,170 @@
+Creating a RESTful API with NodeJS and ExpressJS
+
+	REST (REpresentational State Transfer) has become the modern standard for building scalable web services.
+	RESTful APIs have earned a widespread acceptance across the Internet because of their simplicity, performance, and maintainability.
+
+	ExpressJS is one of the most popular web servers for NodeJS. It comes with support for building RESTful APIs over HTTP and JSON out-of-the-box.
+
+	ExpressJS not only provides endpoints for APIs, but is also suitable for building single-page, multi-page, and hybrid applications.
+
+	Finally, using NodeJS as an API platform comes with many advantages thanks to its non-blocking, event-driven I/O paradigm. Those features make it suitable for building realtime applications that scale well. NodeJS and SocketIO facilitate developers in moving from the traditional, stateless, one-way connection applications to have realtime, two-way connection web applications. The server and clients can initiate communication asynchronously and exchange data instantly.
+
+## Getting started with REST
+
+	Getting started with REST
+	
+	REST is a stateless, cacheable, and uniform interface that provides client-server
+	communication. It leverages the HTTP protocol. REST uses the HTTP verb methods
+	such as GET, POST, PUT, PATCH, and DELETE. These methods are accompanied by
+	a URI (Uniform Resource Identifier), which has a protocol, domain, and a path.
+
+	PUT versus PATCH
+	PUT is used to replace an existing resource entirely, while PATCH
+	is use for partial updates of a resource.
+
+
+## Scaffolding RESTful APIs
+
+	Create our products' API endpoint:
+
+	$ yo angular-fullstack:endpoint product
+
+## Bootstrapping ExpressJS
+
+	ExpressJS is a web server composed mainly of routes, middlewares, and views.
+	However, since we are aiming to build a Single Page Applications (SPA), we are
+	going to use ExpressJS as a REST endpoint and Angular's views. So from ExpressJS,
+	we are only going to use the routes and middleware.
+
+	When the server receives a request, it goes through all the registered middlewares
+	one by one. The middlewares are functions with three parameters; request,
+	reponse, and next. If no error is found, it hands over the request to the next
+	middleware in the chain. 
+
+	Middlewares are very diverse: they can log information,
+	process cookies, sessions, do authentication, and so on. 
+
+	Routes are functions that process requests, but they have only two parameters: request and
+	response (there is no next). 
+
+	Routes are executed only when the URL matches theirs.
+	For example:/products and /products/1222.
+
+		meanshop/server
+		├── api
+		│ ├── product - Product API
+		│ │ ├── index.js - Routes
+		│ │ ├── index.spec.js - Routes tests
+		│ │ ├── product.controller.js - Controller
+		│ │ ├── product.integration.js - Controller tests
+		│ │ ├── product.model.js - Model
+		│ │ ├── product.model.spec.js - Model tests
+		│ │ ├── product.socket.js - SocketIO config
+		│ │ └── product.events.js - Model event emitter
+		│ ├── thing/* - Thing API (demo)
+		│ └── user/* - User API
+		├── config
+		│ ├── environment
+		│ │ ├── development.js - Development config
+		│ │ ├── index.js - Loads env scripts
+		│ │ ├── production.js - Sets production config
+		│ │ └── test.js - Sets testing config
+		│ ├── express.js - Express middleware
+		│ ├── local.env.js - Environment variables
+		│ ├── seed.js - Sample data (seeds)
+		│ └── socketio.js - (Web)Socket config
+		├── auth/*
+		├── components/*
+		├── views/*
+		├── app.js - bootstrap ExpressJS
+		└── routes.js - Loads all the routes
+
+	meanshop/server/app.js
+
+		// Set default node environment to development
+		// Connect to MongoDB
+		// Populate databases with sample data
+		// Setup server
+		// Start server
+		// Expose app
+
+		ExpressJS is essentially a chain of middleware calls that ends
+		in a route. There are middlewares for processing cookies, sessions, logging,
+		authentication, and soon. When the requests hit the server, a middleware processes
+		it and then hands it over to the next registered middleware, till it finally reaches the
+		router. 
+
+		The router passes it on to the matching controller depending on the URL and HTTP verb.
+
+## Understanding routes in ExpressJS
+
+	BluebirdJS promise package.
+	https://github.com/petkaantonov/bluebird/ 
+
+	product/index.js
+
+		Since product.controller is required under the controller variable, this means
+		that we can make use of the five actions defined in there. In the index.js file, each
+		one of the actions is associated with a route. Notice that some of them have the :id
+		parameter; this will make it accessible to the controller using req.params.id.
+
+	server/routes.js
+
+		app.use mounts our routes created in the api/product/index.js on top of the route /api/products.
+
+## Testing, TDD, BDD, and NodeJS
+
+	TDD (Test Driven Development) and BDD(Behavior Driven Development)
+
+	In software terms, TDD is like the double-entry bookkeeping in accounting. Every
+	feature has a double entry, one in the production code and another one in the testing
+	code. It helps us in detecting mistakes quickly and reducing the debug time. It has a
+	very short development cycle:
+	1. Write a test and it should fail since nothing has been implemented yet.
+	2. Develop just enough production code to implement the test.
+	3. Finally, refactor the code (and tests), and make sure the tests still succeed.	
+
+	BDD builds on top of TDD; the tests are usually referred as specs (specifications)	
+	or scenarios, and the test suite provides a functional documentation of the code.
+
+	Mocha: http://mochajs.org/#getting-started.
+
+	For testing the models, we are
+	going to use a BDD style assertion should.js (also developed for TJ). You can study
+	all the possible assertions at https://github.com/tj/should.js.
+
+## Testing the products model 
+
+	server/api/product/product.model.spec.js
+
+	Steps:
+
+		1. Create a single test, and watch it fail by running grunt test:server.
+		2. Implement the code and run grunt test:server again; it should pass this time.
+		3. Refactor the tests and code if possible, and the test should still succeed.
+		4. Write another test, and repeat this cycle until all tests are completed.	
+
+	Most of the BDD style tests are grouped in the describe blocks, and inside
+	these blocks there are it blocks. They are both JavaScript functions that take two
+	parameters: one is the plain English text string, and the other one is a callback
+	function. The it blocks are the ones that define the tests in their callback functions.
+	Notice that some of the callback functions have the done parameter. The done()
+	function helps us to test asynchronous functions, and when called, it also returns
+	errors with done(err). The beforeEach blocks are executed before each it
+	block inside their current describe block. In our case, we are going to remove all
+	the products before starting each test using Product.remove(done). The block
+	beforeEach helps us to test each block in isolation so that the products created in the
+	previous tests do not interfere with the tests that follow.
+
+## Product model implementation
+
+	server/api/product/product.model.js
+	
+## Testing the API
+
+	/product.integration.js
+	
+	We are going to use SuperTest (also created by TJ) to provide a high-level
+	abstraction for testing the HTTP routes for our controllers. Check out
+	https://github.com/visionmedia/supertest for more details.
+

@@ -1,0 +1,304 @@
+Building a Flexible Database with MongoDB
+
+	NoSQL is focused on providing scalability, performance, and high availability.
+
+	MongoDB is one of the most popular NoSQL databases. It has been adopted by
+	a number of major websites such as Craigslist, eBay, Foursquare, The New York
+	Times, and others. 
+
+	MongoDB provides a flexible data model and an expressive query language, and is highly scalable.
+
+	MongoDB is an open source, cross-platform, document-oriented database. Instead
+	of using the traditional table-based rigid schemas, MongoDB favors JSON-based
+	documents with dynamic schemas.
+
+## MongoDB daemons and CLI
+
+• mongod: This is the database server and daemon
+• mongo: This is the database client and shell
+
+Execute the mongo shell, and you will see the Command Prompt.
+It is a JavaScript environment.
+
+	mongo> db.products.insert({
+	... title: 'Cellphone',
+	... stock: parseInt(Math.random()*100),
+	... price: Math.random()*100
+	... })
+	WriteResult({ "nInserted" : 1 })
+
+## MongoDB
+
+	Create a document
+
+		db.products.insert({
+		title: 'Product1',
+		stock: 15,
+		price: 112.36
+		})	
+
+	Retrieves all data from	the collection.
+
+		db.products.find()
+
+	Finds all products where the stock is less than 100 and	greater than 10.
+
+		db.products.find({stock:
+		{$lt: 100, $gt: 10}})
+
+	Updates a row/document from a collection.
+
+		db.products.update({},
+		{ $set: {title: 'MEANshop'}
+		},
+		{ multi: true}
+		)	
+
+	Deletes all data from the collection.
+
+		db.products.remove({})
+
+	Being schema-less gives much flexibility, since we can add new fields without having
+	to change the previous data.
+
+## Aggregators
+
+	Aggregators perform a calculation on the data, and usually reduce it to numeric
+	values or filter/sort out data.
+
+	This adds the price of all products.
+
+		db.products.aggregate([{
+			$group: {
+				_id: null,
+				total: { $sum: "$price" }
+			}
+		}])	
+
+	This adds all products by title and shows only the one where the title is Product.
+
+		db.products.aggregate([
+			{ $match: {title: 'Product'
+			}},
+			{ $group: { _id: '$title',
+			total: { $sum: "$price" } }}
+		])
+
+## CRUDing with Mongoose
+
+	Schemas
+
+		Schemas are the way through which Mongoose provides data types and validations to the MongoDB documents.
+
+		Full URI:
+
+		// single servers
+		var uri = 'mongodb://username:password@hostname:port/database'
+
+		// multiple servers in replica sets
+		var uri = 'mongodb://user:pass@localhost:port/database,mongodb://
+		anotherhost:port,mongodb://yetanother:port';
+
+		mongoose.connect(uri);
+
+		We pass the URI to mongoose.connect in order to connect to MongoDB. We can
+		specify a database name that does not exist yet, and it will be created on the fly.
+
+		The following are the valid schema types:
+
+		• String: This stores a string value encoded in UTF-8
+		• Number: This stores a number value
+		• Date: This stores a date and time object as an ISODate
+		• Buffer: This stores binary information, for example, images, files, and so on
+		• Boolean: This stores either true or false
+		• Mixed: This stores a JSON object which could contain any kind of element
+		• ObjectId: This is a unique identifier of a record, usually used to refer other documents
+		• Array: This can hold a collection of any of the other data types described in this list
+
+		Compile the schema into a model using mongoose.model. 
+		The model is a constructor from where we can create new documents.
+
+		Use Robomongo (http://robomongo.org/) to see the data in MongoDB.
+
+	Create 
+
+		• Model#save([options], product): This is the instance method that saves a document
+		• Model.create(doc(s), [fn]): This is the class method to automatically create and save the data
+
+		All the mongoose functions follow an asynchronous pattern like most of the
+		functions in JavaScript. We pass a callback method that tells us when the product
+		was saved or if an error occurred.
+
+	Read
+
+		• Model.find(conditions, [fields], [options], [callback])
+		• Model.findById(id, [fields], [options], [callback])
+		• Model.findOne(conditions, [fields], [options], [callback])
+
+		If we want to get all the products, we can omit the condition in the parameter:
+
+			Product.find(callback);
+
+		We can perform searches if we pass conditions, as follows:
+
+			Product.find({title: 'MEANBook'}, callback);
+			Product.find({title: /mean/i}, callback);
+			Product.findOne({title: /^mean/i}, callback);
+			Product.find({price: {$gte: 100 }}, callback);
+
+		The conditions object is very expressive. We can have regular expressions, and even
+		use aggregators like the following:
+
+		• $gte: greater than or equal; and $lte: less than or equal
+		• $eq: equal; and $ne: not equal
+		• $gt: greater than; and $lt: less than
+		• $in: matches in an array; and $nin: not in array
+
+	Update
+
+		• Model.update(conditions, update, [options], [callback])
+		• Model.findByIdAndUpdate(id, [update], [options], [callback])
+		• Model.findOneAndUpdate([conditions], [update], [options], [callback])
+
+	Delete
+
+		• Model.remove(conditions, [callback])
+		• Model.findByIdAndRemove(id, [options], [callback])
+		• Model.findOneAndRemove(conditions, [options], [callback])		
+
+## Exploring a few advanced features in Mongoose
+
+	Instance methods
+	Instance methods are custom methods that we can add to our schemas. They become
+	available at the instance level. For example:
+
+		UserSchema.methods.authenticate = function(plainText) {
+			return this.encryptPassword(plainText) === this.hashedPassword;
+		}
+
+	The static methods
+	Static methods are available at the constructor level, as shown in the following code:
+
+		UserSchema.statics.findByName = function(name, callback){
+			return this.find({name: new RegExp(name, 'i')}, callback);
+		}
+
+		var User = mongoose.model('User', UserSchema);
+    	User.findByName('adrian', callback);
+
+    Virtuals
+    Virtuals are setters and getters that don't persist in MongoDB. They are useful for
+	composing data from multiple fields using get. Furthermore, using set can break
+	down data to save it in separate fields.
+
+	Validations
+	Validations occur when a document attempts to be saved or updated.
+
+	Built-in validations
+	We have already used built-in validations in our ProductSchema to validate the
+	required fields and min values. To summarize, the following are all the built-in
+	validations:
+
+	• All the SchemaTypes have the required validator
+	• The min and max validators are only for the Number SchemaTypes
+	• The enum from array and match regexp validators are only for the String SchemaTypes	
+
+	Custom validations
+
+	They are used by passing the property we want to validate in
+	the path method, and passing the validator function on the method validate, as
+	follows:
+
+		meanshop/server/api/user/user.model.js
+
+	Middleware
+
+		Middleware in Mongoose are hooks that execute before (pre) or after (post) certain
+		actions like initialization, validations, update, save, or remove. Middlewares are
+		usually used for triggering customs events, performing asynchronous tasks, and for
+		performing complex validations.
+		We can chain multiple middleware hooks, and they will execute one after another.
+		Here's an example of many of the possible middleware combinations:	
+
+		we can see multiple pre and post combinations with init, validate, save, remove, and update.
+
+## Reviewing models and server-side structure
+
+	The server folder
+
+		meanshop/server
+		├── api - Server API components
+		├── auth - Authentication handlers
+		├── components - App-wide/reusable components
+		├── config - App configuration
+		│ └── local.env.js - Environment variables
+		│ └── environment - Node environment configuration
+		├── views - Server rendered views
+		└── app.js - Bootstrap the application	
+
+	The app.js script is the main script. It loads all the other scripts and bootstraps ExpressJS.
+
+	API component:
+
+		meanshop/server/api/thing
+		├── index.js - ExpressJS Routes
+		├── thing.controller.js - ExpressJS Controller
+		├── thing.model.js - Mongoose model
+		├── thing.socket.js - SocketIO events
+		└── thing.spec.js - Controller tests
+
+	CommonJS Modules
+
+		The purpose of CommonJS is to provide modules in the server-side JavaScript.
+		It provides a way for handling dependencies, and to solve scope issues using the
+		following:	
+
+		• require: This function allows the importing of a module into the current scope.
+		• module.exports: This object allows exporting functionality from the current
+		module. Everything attached to it (functions/attributes) will be available
+		when the require function is invoked.
+		• exports: This is the module.exports helper. Modules ultimately return
+		module.exports, not exports. So, everything attached to exports is collected
+		and passed to module.exports if and only if module.exports have not been
+		assigned to anything yet.
+
+			// user.js
+			exports.name = function(name){
+				return 'My name is ' + name;
+			}
+
+			> var user = require('./user');
+			> user.name('Adrian');
+
+		Try to assign something to module.export
+
+			// user.js
+			module.exports = 'Mejia';
+				exports.name = function(){
+				return 'My name is Adrian';
+			}
+
+			> var user = require('./user');
+			> user.name('Adrian');
+			> user
+
+		Exports versus module.exports
+		The rule of thumb is to use only exports to assign multiple properties or
+		functions. On the other hand, when we want to export a single object or
+		a single function, we can do it directly to module.exports. Remember
+		never to use both since module.exports is going to override everything
+		attached to exports.
+
+## The user model
+
+	server/api/user/user.model.js
+
+	// Virtual attributes
+	// Validate empty password
+		Validations are necessary to keep the data in a healthy state. They are run before
+		save/update, and display user error messages to the user when the conditions are
+		not met. We use path to specify the property that we want to validate and validate
+		to provide the validator function.
+
+	// instance methods
+	

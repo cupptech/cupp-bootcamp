@@ -1,0 +1,182 @@
+Checking Out Products and Accepting Payment
+
+## Setting up the shopping cart
+	
+	we are going to use the already available module: ngCart.
+
+	The ngCart module provides the following directives and services that we need to
+	get started with the shopping cart:
+	1. It renders an Add to cart button: <ngcart-addtocart id="{{item.
+	id}}" name="{{item.name}}" price="{{item.price}}"></ngcartaddtocart>.
+	2. Renders a shopping cart: <ngcart-cart></ngcart-cart>.
+	3. Shows the cart summary: <ngcart-summary></ngcart-summary>.
+	4. Renders the checkout buttons for PayPal and other HTTP services: <ngcartcheckout
+	service="http" settings="{url:'/checkout' }"></ngcartcheckout>.
+
+	Installing ngCart
+
+		bower install ngcart#1.0.0 --save
+
+		There is no need to worry about adding it to index.html; a grunt task (gruntwiredep)
+		will inject it for us.
+
+		The ngCart directives require some templates for its directives. We need to copy
+		them to our project:
+
+		cp -R client/bower_components/ngcart/template/ngCart client/components/ngcart		
+
+	Add/remove to cart
+
+		First, let's replace the Buy button for the Add to cart button in the products listing
+		page (product-list.html)
+
+			<ngcart-addtocart id="{{product._id}}" quantity="1" quantitymax="
+			9" name="{{product.title}}" price="{{product.price}}" templateurl="
+			components/ngcart/addtocart.html" data="product">Add to Cart</ngcart-addtocart>
+		
+		client/components/ngcart/addtocart.html
+
+			With this new template, we only need one button. If you click once, we add the
+			items to the cart, and if we click again, we remove it from the cart.
+
+	The cart's summary
+
+		client/components/navbar/navbar.html
+
+			<li>
+			<a ui-sref="checkout">
+			<ngcart-summary template-url="components/ngcart/summary.html"></
+			ngcart-summary>
+			</a>
+			</li>	
+		client/components/ngcart/summary.html
+			
+		client/app/products/products.js
+
+			.state('checkout', {
+			url: '/checkout',
+			templateUrl: 'app/products/templates/products-checkout.html',
+			controller: 'ProductCheckoutCtrl'
+			});			
+
+## The checkout page and Braintree integration
+
+	We are going to receive payments from two sources: PayPal and credit/debit cards.
+	We are going to use the Braintree services to collect payments from both sources. For
+	that, we are going to use braintree-angular. Let's install it:
+
+		bower install braintree-angular#1.3.1 --save
+
+	client/app/products/templates/products-checkout.html
+
+		<braintree-dropin options="paymentOptions">Loading...</braintree-dropin>
+
+	We are using the braintree-dropin directive to render the default card forms and
+	the PayPal button. This form is going to take care of the validations and security.
+
+	Braintree has a workflow different from the other payment platforms. This is how it
+	is going to work in our app:	
+
+		1. Angular app will request a client token from our node backend.
+		2. The node backend will use the Braintree SDK to generate a client token and
+		reply with it.
+		3. The Angular app will use the client token and the PayPal/card information
+		to get authorization from the Braintree servers. The Braintree servers will
+		generate a nonce, which is sent back to the Angular app.
+		4. The Angular app will then send the nonce to the node backend to finish
+		executing the payment operation.
+
+		Refer to https://developers.braintreepayments.com/
+		javascript+node/start/overview for more detailed information.
+
+	client/app/products/products.controller.js		
+
+		In the scope, we defined a couple of things that we are already using in the checkout
+		page such as errors and paymentOptions. In paymentOptions, we are adding a
+		callback that is going to be executed when the user provides his/her credit card
+		number or PayPal authorization. If the authorization is successful, the payload
+		parameter gets a nonce parameter, which will be used to execute the payment on
+		the NodeJS side. Notice that we are also serializing the shopping cart, and adding/
+		merging it to the payload. Finally, we create an order in our backend using the
+		payload information. If we are able to collect the payment in the backend, we
+		redirect the user to the marketplace and empty the cart; otherwise, we present an
+		error message.
+
+## Setting up Braintree endpoint and authentication
+	
+	Braintree SDK
+
+		npm install braintree@1.29.0 --save
+
+	Generate the endpoint:
+
+		yo angular-fullstack:endpoint braintree
+
+	The API keys
+
+		We need to get the API keys in order to use the Braintree services. Go to https://
+		www.braintreepayments.com/get-started and create a sandbox account.
+
+		Once you have the private/public keys and the merchant ID, add it to local.env.js
+
+	Gateway
+
+		server/api/braintree/braintree.model.js
+
+		This model is very different, since it doesn't store anything in MongoDB like the
+		others. Instead, it sets up communication with a remote service in the Braintree
+		servers.
+
+	Controller
+
+		server/api/braintree/braintree.controller.js
+		
+		use the Braintree gateway in the controllers
+
+	Router
+
+		server/api/braintree/index.js
+
+		We are using only two actions: POST checkout and GET clientToken.
+
+
+## Creating an order
+
+	Using HTTP POST, we
+	can send all the cart information to the backend to create an order. Let's create a new
+	API call for the orders:
+
+		yo angular-fullstack:endpoint order
+
+	Modifying the order model
+	
+		server/api/order/order.model.js
+
+		• Notice that the fields product and user use the ObjectId type with a ref
+		attribute. That way, we can reference the objects in other collections. We are
+		also using sub-documents, which is a feature of mongoose.
+		• Items has a direct reference to OrderDetailSchema. We are not creating a
+		new collection for it; we are just embedding the order details into the order
+		collection.
+		• Unfortunately, mongoose lacks a currency type, so we simulate our own.
+		Using get and set, we can store the prices in integers rather than floating
+		points, and avoid round-up errors.
+		• We use the Braintree services to execute the payment before saving the order.			
+
+	Testing the order model
+
+		server/api/order/order.model.spec.js
+
+	Using the sandbox account
+
+		Finally, we can test the workflow of order creation by running the application (grunt
+		serve), as follows:
+		1. Add multiple products to the shopping cart.
+		2. Checkout the products using some valid credit card numbers for testing such
+		as 4111 1111 1111 1111 or 4242 4242 4242 4242.
+		3. Any expiration date in the future will work.
+
+
+
+
+

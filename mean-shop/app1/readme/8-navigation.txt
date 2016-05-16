@@ -1,0 +1,138 @@
+Adding Search and Navigation
+
+## Adding search to the navigation bar 
+
+	client/components/navbar/navbar.html
+
+	client/components/navbar/navbar.controller.js
+
+		broadcast an event when anything on the search form is typed
+		$rootScope.$broadcast('search:term', $scope.searchTerm);
+
+		Notice that ng-focus redirects to the products page as soon as the user focuses on
+		the search bar. When the user starts typing the product name, the matching word
+		shows up.
+
+## Adding product categories
+
+	Product categories allow us to filter the products based on certain criteria, such as
+	books, clothing, and so on. Hierarchies are another important feature to be added so
+	that we can group the categories into sub-categories. For example, within the book
+	category, we can have multiple sub-categories like non-fiction, novels, self-help, and
+	so on.
+
+	Adding the sidebar
+		list all the products categories
+		client/app/products/templates/product-list.html
+
+	Create the new sidebar components
+		mkdir client/components/sidebar
+		touch client/components/sidebar/sidebar.{html,scss,controller.js,service.js}
+
+	The SidebarCtrl controller is going to pull out all the product categories from products
+		client/components/sidebar/sidebar.controller.js
+
+	And finally, we need a service that will retrieve the categories from the database.
+		client/components/sidebar/sidebar.service.js
+
+	Improving product models and controllers
+		Let's move to the server side. We will now provide the routes and URLs for filtering
+		the products by categories and will allow us to search for products. For the search,
+		we are going to add MongoDB's full-text indexes, and for the categories, we are
+		going to create a new mode
+
+		server/api/product/product.model.js
+
+		Notice that we added two
+		text indexes on title and description. That will allow us to search on those fields.
+
+	Catalog controller and routes
+
+		server/api/product/index.js
+
+			router.get('/:slug/catalog', controller.catalog);
+			router.get('/:term/search', controller.search);
+
+		server/api/product/product.controller.js
+
+			For the catalog action, we are performing the following two steps:
+			1. Finding the category ID by the slug
+			2. Finding all the products that match the category's ID and the IDs of the
+			category's children.
+
+			For the search action, we are using MongoDB's $text $search; this is going to work
+			on all the fields which have text indexes, such as title and description.		
+
+	The catalog model
+
+		npm install mongoose-url-slugs@0.1.4 --save
+
+		yo angular-fullstack:endpoint catalog
+
+		server/api/catalog/catalog.model.js
+
+			var mongoose = require('bluebird').promisifyAll(require('mongoose'));
+			var Schema = mongoose.Schema;
+			var slugs = require('mongoose-url-slugs');	
+			
+			CatalogSchema.plugin(slugs('name'));
+			we are adding a plugin to generate the slugs based on the name.		
+
+			server/api/catalog/catalog.model.spec.js
+
+	Seeding products and categories
+
+		server/config/seed.js
+
+		We use promises to avoid the so-called callback hell. We create each one of the
+		categories first and save them in variables. Later, we create each of the products and
+		associate them with its corresponding category. If any errors occur in the process,
+		they are catch'ed at the very end.
+
+
+## Implementing the search and navigation functionality
+
+	Adding custom $resource methods
+
+	client/app/products/products.service.js
+
+		We have modified the URL with a new attribute; controller, which can be either
+		search or catalog. We pass that parameter explicitly using params.
+
+	Setting up routes and controllers
+
+		client/app/products/products.controller.js
+
+		$scope.products = Product.search({id: data});
+
+		$scope.product = Products.catalog({id: $stateParams.slug});
+
+	client/app/products/products.js
+
+		For the product catalog, we need to add the state productCatalog in the routes.
+
+## How navigation works on the client side
+
+	Navigation starts in sidebar.html, where we render each one of the results
+	from Catalog.query() (see sidebar.service.js and sidebar.controller.
+	js). Each one of the rendered catalog elements are linked to a state (uisref="
+	productCatalog({slug: category.slug})").
+
+	The productCatalog (in product.js) state invokes the controller,
+	ProductCatalogCtrl. This last one invokes the product service with the catalog
+	action (Product.catalog). Finally, the request is made to the Node API, which
+	returns the products matching the given category.
+
+## How search works on the client side
+
+	Search starts in navbar.html, where we added the search textbox. As soon as the
+	user focuses on the search box, he/she will be redirected to the products page.
+	The navbar broadcasts the event 'search:term', so any service interested in it can
+	subscribe to it.
+	
+	The ProductsCtrl controller renders all the products by default. It also listens
+	for the search:term events. If there's a search term, then instead of rendering all the
+	products, it will render only the elements matching the search words. This is done
+	through the Product.search service, which invokes the Node API, and returns all
+	the matching products given in the search term.
+

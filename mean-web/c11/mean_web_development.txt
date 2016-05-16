@@ -1,0 +1,1749 @@
+1. Introduction to MEAN 
+MEAN
+	MongoDB as the database
+	Express as the web server framework
+	AngularJS as the web client framework
+	Node.js as the server platform
+
+MVC
+	View handles the visual part, taking care of user interaction.
+	Controller responds to system and user events, commanding the Model and View to change appropriately.
+	Model handles data manipulation, responding to requests for information or changing its state according to the Controller's instructions.
+	
+The evolution of JavaScript
+	- Web browsers use to execute client-side logic.
+	- 2008 Google released Chrome browser with V8 JavaScript engine, its fast.
+	- Build non-blocking units of code to allow better use of system resources and create more responsive applications.
+	- V8-based database, MongoDB, MongoDB was a scalable NoSQL database that used a JSON-like data model with dynamic schemas.
+	- 2009, AngularJS, bridge the gap between JavaScript and HTML and help popularize
+single page application development.
+	- Two-way data binding, cross-component dependency injection
+	- Full-stack Javascript, using JavaScript across all three layers: data, logic, presentation
+
+MEAN
+	- Single language 
+	- JSON objects
+	- MVC architecture 
+
+Installing MongoDB
+	The mongod process runs the main MongoDB server process.
+	The mongod process requires a folder to store the database files in (the default folder is /data/db) and a port to listen to (the default port is 27017).
+	
+	Running MongoDB manually 
+	> C:\mongodb\bin\mongod.exe
+	
+	Installing MongoDB from binaries
+	$ curl -O http://downloads.mongodb.org/osx/mongodb-osx-x86_64-2.6.4.tgz
+	$ tar -zxvf mongodb-osx-x86_64-2.6.4.tgz
+	$ mv mongodb-osx-x86_64-2.6.4 mongodb
+	$ mkdir -p /data/db
+	$ chown -R $USER /data/db
+	$ cd mongodb/bin
+	$ mongod
+
+	Install MongoDB using a package manager
+	Yum, APT, Homebrew 
+	
+	Using the MongoDB shell
+	Allows to interact with your server instance using the command line.
+	$ cd mongodb/bin
+	$ mongo
+	
+Installing Node.js on Linux
+	$ tar -zxf node-v0.10.31.tar.gz
+	$ cd node-v0.10.31
+	$ ./configure && make && sudo make install
+	
+	Running Node.js
+	$ node (command-line interface, cli)
+	
+NPM
+	- A registry of packages to browse, download, and install third-party modules
+	- A CLI tool to manage local and global packages
+	- NPM has two installation modes: local and global
+	
+	$ npm install <Package Unique Name>
+	$ npm install –g <Package Unique Name>
+	
+	For instance, to install the second major version of the Express package
+	$ npm install express@2.x
+	
+	$ npm uninstall < Package Unique Name>
+	$ npm uninstall –g < Package Unique Name>
+	
+	To update a package to its latest version
+	$ npm update < Package Unique Name>
+	$ npm update –g < Package Unique Name>
+	
+	package.json
+	$ npm init
+	$ npm install
+	$ npm update, This will install any missing packages and will update all of your existing dependencies to their specified version.
+	$ npm install express --save 
+	
+2. Getting Started with Node.js
+	Need to support the push of data from the server to the browser.
+	V8 engine in the late 2008.
+	Node.js wasn't just a JavaScript execution engine, but a platform capable of running complex JavaScript applications that were simple to code, highly efficient, and easily scalable.
+
+JavaScript event-driven programming
+	JavaScript is an event-driven language, which means that you register code to specific events, and that code will be executed once the event is emitted. 
+	This concept allows you to seamlessly execute asynchronous code without blocking the rest of the program from running.
+	
+	The event loop is a single-threaded loop that the browser runs infinitely. Every
+	time an event is emitted, the browser adds it to an event queue. The loop will then
+	grab the next event from the queue in order to execute the event handlers registered
+	to that event.	
+	
+	While the browser usually deals with user-generated events (such as button
+	clicks), Node.js has to deal with various types of events that are generated from
+	different sources.
+
+Node.js event-driven programming
+	Multithreading has some significant disadvantages:
+	- Managing threads becomes a complex task
+	- System resources are wasted on idle threads
+	- Scaling these kinds of applications cannot be done easily
+	- When concurrent connections increase, Apache's request handling ability is degrading much faster than Nginx's.
+	- Using event-driven architecture will help you dramatically reduce the load(memory allocation) on your server while leveraging JavaScript's asynchronous behavior in building your web application.
+
+JavaScript closures 
+	Closures are functions that refer to variables from their parent environment.
+	Using the closure pattern will help you utilize event-driven programming without the need to pass the scope state to the event handler.
+	
+Node modules
+	JavaScript's major design flaws is the sharing of a single global namespace.
+	
+	In the browser, when you load a script into your web page, the engine will inject its
+	code into an address space that is shared by all the other scripts.
+	
+CommonJS modules
+	- require(): This method is used to load the module into your code.
+	- exports: This object is contained in each module and allows you to expose pieces of your code when the module is loaded.
+	- module: This object was originally used to provide metadata information about the module. It also contains the pointer of an exports object as a property.
+	
+Node.js core modules
+	fs = require('fs');
+	
+Node.js third-party modules
+	Node will first look for the module in the core modules folder and then try to load the module from the module folder inside the node_modules folder.
+	
+Node.js file modules
+	Place your modules inside a folder and load them by providing the folder path.
+	Relative path, absolute path.
+	
+Node.js folder modules
+	If Node finds a package.json file, it will try parsing it, looking for the main property
+	index.js
+	
+Developing Node.js web applications
+
+Basic Node web server
+	var http = require('http');
+	http.createServer(function(req, res) {
+		res.writeHead(200, {
+			'Content-Type': 'text/plain'
+		});
+		res.end('Hello World');
+	}).listen(3000);
+	console.log('Server running at http://localhost:3000/');
+	
+Meet the Connect module
+	Connect middleware are basically callback functions, which get executed when an HTTP request occurs.
+	The middleware can then perform some logic, return a response, or call the next registered middleware.
+	The dispatcher object handles each HTTP request received by the server and then decides, in a cascading way, the order of middleware execution.
+	
+	var connect = require('connect');
+	var app = connect();
+	app.listen(3000);
+	console.log('Server running at http://localhost:3000/');
+	
+	$ npm install connect
+	$ node server
+	
+	Connect middleware
+	==================
+	Connect middleware is just JavaScript function with a unique signature.
+	• req: This is an object that holds the HTTP request information
+	• res: This is an object that holds the HTTP response information and allows
+	you to set the response properties
+	• next: This is the next middleware function defined in the ordered set of
+	Connect middleware
+	Use the app.use() method to register your middleware with the Connect application.
+	
+Understanding the order of Connect middleware
+	Each Connect middleware function will be executed in first-in-first-out (FIFO) order using the next arguments until there are no more middleware functions to execute or the next middleware function is not called.
+		
+Mounting Connect middleware
+	Mounting is done by adding the path argument to the app.use() method.
+	app.use(logger);
+	app.use('/hello', helloWorld);
+	app.use('/goodbye', goodbyeWorld);
+	app.listen(3000);
+
+3. Building an Express Web Application	
+	$ npm install express
+	$ npm install (package.json) 
+	
+Creating your first Express application
+	var express = require('express');
+	var app = express();
+	app.use('/', function(req, res) {
+		res.send('Hello World');
+	});
+	app.listen(3000);
+	console.log('Server running at http://localhost:3000/');
+	module.exports = app;
+
+The application, request, and response objects
+	The application object is the instance of an Express application you created in the first example and is usually used to configure your application.
+	The request object is a wrapper of Node's HTTP request object and is used to extract information about the currently handled HTTP request.
+	The response object is a wrapper of Node's HTTP response object and is used to set the response data and headers.
+	
+The application object
+	app.set(name, value)
+	app.get(name)
+	app.engine(ext, callback)
+	app.locals
+	app.use([path], callback)
+	app.VERB(path, [callback...], callback)
+	app.route(path).VERB([callback...], callback)
+	app.param([name], callback)
+	
+The request object
+	req.query: This is an object containing the parsed query-string parameters.
+	req.params: This is an object containing the parsed routing parameters.
+	req.body: This is an object used to retrieve the parsed request body.
+	req.param(name): This is used to retrieve a value of a request parameter.
+	req.path, req.host, and req.ip: These are used to retrieve the current request path, host name, and remote IP.
+	req.cookies: This is used in conjunction with the cookieParser() middleware to retrieve the cookies sent by the user-agent.
+
+The response object
+	res.status(code): This is used to set the response HTTP status code.
+	res.set(field, [value]): This is used to set the response HTTP header.
+	res.cookie(name, value, [options]): This is used to set a response cookie.
+	res.redirect([status], url): This is used to redirect the request to a given URL.
+	res.send([body|status], [body]): This is used for non-streaming responses. This method does a lot of background work, such as setting the Content-Type and Content-Length headers, and responding with the proper cache headers.
+	res.json([status|body], [body]): This is identical to the res.send() method when sending an object or array.
+	res.render(view, [locals], callback): This is used to render a view and send an HTML response.
+	
+External middleware
+	Morgan: This is an HTTP request logger middleware.
+	body-parser: This is a body-parsing middleware that is used to parse the request body, and it supports various request types.
+	method-override: This is a middleware that provides HTTP verb support such as PUT or DELETE in places where the client doesn't support it.
+	Compression: This is a compression middleware that is used to compress the response data using gzip/deflate.
+	express.static: This middleware used to serve static files.
+	cookie-parser: This is a cookie-parsing middleware that populates the req.cookies object. 
+
+Implementing the MVC pattern
+
+Application folder structure
+	Horizontal structure for smaller projects
+	Vertical structure for feature-rich applications
+
+Horizontal folder structure
+	A horizontal project structure is based on the division of folders and files by their
+	functional role rather than by the feature they implement, which means that all the application files are placed inside a main application folder that contains an MVC folder structure.
+	
+	app
+		controllers, keep your Express application controllers
+		models, application models
+		routes, routing middleware
+		views, application views
+	config
+		env, keep Express application environment configuration files
+		config.js, configure Express application
+		express.js, initialize Express application
+	public
+		config, AngularJS app configuration files
+		controllers
+		css
+		directives
+		filters
+		img
+		views
+		application.js, initialize your AngularJS app
+	package.json
+	server.js, load the express.js file as a module to bootstrap Express app
+		
+Vertical folder structure
+=========================
+	A vertical project structure is based on the division of folders and files by the feature they implement.
+	
+	File-naming conventions
+		feature.server.controller.js
+		feature.client.controller.js
+	
+	Handling request routing
+		app.get('/', hasName, sayHello);
+		
+	Adding the routing file
+		module.exports = function(app) {
+			var index = require('../controllers/index.server.controller');
+			app.get('/', index.render);
+		};
+	
+	express.js, create Express app and bootstrap it:
+		var express = require('express');
+		module.exports = function() {
+			var app = express();
+			require('../app/routes/index.server.routes.js')(app);
+			return app;
+		};
+
+	server.js: retrieve app object instance, listen to the 3000 port 
+		var express = require('./config/express');
+		var app = express();
+		app.listen(3000);
+		module.exports = app;
+	
+		$ npm install
+		$ node server
+		http://localhost:3000
+
+	Configuring an Express application
+		The process.env is a global variable that allows you to access predefined environment variables, and the most common one is the NODE_ENV environment variable.
+		
+		if (process.env.NODE_ENV === 'development') {
+			app.use(morgan('dev'));
+		} else if (process.env.NODE_ENV === 'production') {
+			app.use(compress());
+		}
+		app.use(bodyParser.urlencoded({
+			extended: true
+		}));
+		app.use(bodyParser.json());
+		app.use(methodOverride());	
+
+		server.js
+			process.env.NODE_ENV = process.env.NODE_ENV || 'development';
+
+		In a Windows environment
+			> set NODE_ENV=development
+			
+		In a Unix-based environment
+			$ export NODE_ENV=development
+
+	Environment configuration files
+		Use the process.env.NODE_ENV environment variable to determine which configuration file to load.
+		
+		module.exports = require('./env/' + process.env.NODE_ENV + '.js');
+		
+		To manage other environment configurations, you'll just need to add a dedicated environment configuration file and properly set the NODE_ENV environment variable.
+		
+	Rendering views
+		The basic concept is passing your data to a template engine that will render the final view usually in HTML.
+		
+		app.render(): render the view and then pass the HTML to a callback function
+			send HTML e-mails
+		res.render(): renders the view locally and sends the HTML as a response
+
+	Configuring the view system
+		$ npm update
+		app.set('views', './app/views');
+		app.set('view engine', 'ejs');
+		
+	Rendering EJS views
+		EJS views basically consist of HTML code mixed with EJS tags.
+		<%= %> tag
+	
+	Serving static files
+		Express comes prebundled with the express.static() middleware
+		app.use(express.static('./public'));
+		Notice how the express.static() middleware is placed below the call for the routing file. This order matters because if it were above it, Express would first try to look for HTTP request paths in the static files folder. This would make the response a lot slower as it would have to wait for a filesystem I/O operation.
+		
+	Configuring sessions
+		Sessions are a common web application pattern that allows you to keep track of the
+		user's behavior when they visit your application.
+		The express-session module will use a cookie-stored, signed identifier to identify the current user. To sign the session identifier, it will use a secret string, which will help prevent malicious session tampering.  
+		
+	session = require('express-session');
+	app.use(session({
+		saveUninitialized: true,
+		resave: true,
+		secret: config.sessionSecret
+	}));
+	
+	The session middleware adds a session object to all request objects in your application. Using this session object, you can set or get any property that you wish to use in the current session.
+	
+	if (req.session.lastVisit) {
+		console.log(req.session.lastVisit);
+	}
+	req.session.lastVisit = new Date();
+	
+4. Introduction to MongoDB
+
+	High throughput 
+	Unique BSON data model   
+	Easily scalable architecture
+	
+	The approach of storing a normalized data model using a mature relational database became the standard. 
+	
+	- key-value storage 
+	- column storage 
+	- object storage 
+	- document storage 
+	
+	In a common relational database, your data is stored in different tables, often connected using a primary to foreign key relation.
+	Document-oriented databases store hierarchical documents in standard formats, such as JSON and XML.
+	{
+		"title": "First Blog Post",
+		"comments": [
+		]
+	}
+	
+	Main Difference:
+	While working with relational databases, your data is stored in different tables, with your application assembling objects using table records.
+	Storing your data as holistic documents will allow faster read operations since
+	your application won't have to rebuild the objects with every read.
+	
+	Schemaless
+	Document-based databases are often schemaless, which means you can store different objects in a single collection of objects without changing anything in your database.
+	This means your application, and not the database, will be in charge of enforcing the
+	data structure, which can help you speed up your development process.
+	
+	Caching and scale 
+	
+	Introducing MongoDB
+	2007 10gen
+	MongoDB was able to support complex data storage, while maintaining the high-performance approach of other NoSQL stores.
+	
+	Advantages
+	- standard JSON outputs
+	- With the scalable platform in mind, it had to support simple horizontal scaling while sustaining the durability of traditional databases.
+
+Key features of MongoDB
+- The BSON format
+	Binary JSON, the BSON format is a binary-encoded serialization of JSON-like documents. 
+	Like JSON, BSON documents are a simple data structure representation of objects and arrays in a key-value format.
+	Another big advantage of the BSON format is the use of the _id field as primary key.
+	The BSON format enables MongoDB to internally index and map document properties and even nested documents, allowing it to scan the collection efficiently and more importantly, to match objects to complex query expressions.
+
+- MongoDB ad hoc queries
+	db.posts.find({ title:/mongo/ });
+	
+- MongoDB indexing
+	Indexes are a unique data structure that enables the database engine to efficiently resolve queries.
+
+- MongoDB replica set
+	A replica set is a set of MongoDB services that host the same dataset.
+	All of the set instances support read operations, but only the primary instance is in charge of write operations.
+	To provide data redundancy and improved availability.
+	Another robust feature of the MongoDB replica set is its automatic failover.
+
+- MongoDB sharding
+	Vertical scaling is easier and consists of increasing single machine resources, such as RAM and CPU, in order to handle the load.
+	Horizontal scaling is more complicated and is done using several machines.
+	Luckily MongoDB supports horizontal scaling, which it refers to as sharding. Sharding is the process of splitting the data between different machines, or shards.
+	
+MongoDB shell
+	The MongoDB shell is a command-line tool that enables the execution of different
+	operations using a JavaScript syntax query language.
+
+	$ mongo
+	
+MongoDB databases
+	> use mean 
+	Notice that you didn't need to create the database before using it because in MongoDB, databases and collections are lazily created when you insert your first document.
+	$ mongo mean
+	> show dbs
+	
+MongoDB collections
+	A MongoDB collection is a list of MongoDB documents.
+	A collection is created when the first document is being inserted.
+	
+	> db.posts.insert({"title":"First Post", "user": "bob"})
+	> db.posts.find()
+	
+	> show collections
+	> db.posts.drop()
+	
+	MongoDB CRUD operations
+	Create, read, update, and delete (CRUD) operations
+	
+	Creating a document using insert()
+		> db.posts.insert({"title":"Second Post", "user": "alice"})
+	
+	Creating a document using update()
+		> db.posts.update({
+			"user": "alice"
+		}, {
+			"title": "Second Post",
+			"user": "alice"
+		}, {
+			upsert: true
+		})
+		
+	Creating a document using save()
+		> db.posts.save({"title":"Second Post", "user": "alice"})
+		
+	Reading documents
+		Finding all the collection documents
+		> db.posts.find()
+		> db.posts.find({})
+		
+	Using an equality statement
+		> db.posts.find({ "user": "alice" })
+		
+	Using query operators
+		> db.posts.find({ "user": { $in: ["alice", "bob"] } })
+		https://docs.mongodb.org/manual/reference/operator/query/#query-selectors
+
+	Building AND/OR queries
+		AND query
+		> db.posts.find({ "user": "alice", "commentsCount": { $gt: 10 } })
+		OR query
+		> db.posts.find( { $or: [{ "user": "alice" }, { "user": "bob" }] })
+		
+	Updating existing documents
+	- first argument is the selection criteria that indicate which documents to update
+	- the second argument is the update statement
+	- the last argument is the options object
+	
+		> db.posts.update({
+			"user": "alice"
+		}, {
+			$set: {
+				"title": "Second Post"
+			}
+		}, {
+			multi: true
+		})
+	
+	Updating documents using save()
+		Another way of updating an existing document is by calling the save() method, passing it a document that contains an _id field.
+		> db.posts.save({
+			"_id": ObjectId("50691737d386d8fadbd6b01d"),
+			"title": "Second Post",
+			"user": "alice"
+		});
+
+	Deleting documents
+		Deleting all documents
+		> db.posts.remove()
+		
+		Deleting multiple documents
+		> db.posts.remove({ "user": "alice" })
+		
+		Deleting a single document
+		> db.posts.remove({ "user": "alice" }, true)
+		
+5. Introduction to Mongoose
+	Robust Node.js ODM module that adds MongoDB support to your Express application.
+	Mongoose is a Node.js module that provides developers with the ability to model objects and save them as MongoDB documents.
+	While MongoDB is a schemaless database, Mongoose offers you the opportunity to enjoy both strict and loose schema approaches when dealing with Mongoose models.
+	
+Installing Mongoose
+	$ npm install mongoose --save
+	
+Connecting to MongoDB
+	MongoDB connection URI:
+	mongodb://username:password@hostname:port/database
+	
+	Connecting to a local instance:
+	mongodb://localhost/mean-book
+	
+	mongoose.js
+	var db = mongoose.connect(config.db); 
+	
+Understanding Mongoose schemas
+	Mongoose uses a Schema object to define the document list of properties, each with its own type and constraints, to enforce the document structure.
+	After specifying a schema, you will go on to define a Model constructor that you'll use to create instances of MongoDB documents.
+	
+Creating the user schema and model
+	Defined UserSchema object using the Schema constructor, and then use the schema instance to define User model, user.server.model.js:
+
+	var mongoose = require('mongoose'),
+		Schema = mongoose.Schema;
+	var UserSchema = new Schema({
+		firstName: String,
+		lastName: String,
+		email: String,
+		username: String,
+		password: String
+	});
+	mongoose.model('User', UserSchema);
+
+Registering the User model
+	require('../app/models/user.server.model');
+	
+Creating new users using save()
+	First, you used the Mongoose module to call the model method that will return the User model you previously defined.
+	
+		var User = require('mongoose').model('User');
+		exports.create = function(req, res, next) {
+		var user = new User(req.body);
+		user.save(function(err) {
+			if (err) {
+				return next(err);
+			} else {
+				res.json(user);
+			}
+		});
+		};	
+	
+	users.server.routes.js
+		var users = require('../../app/controllers/users.server.controller');
+		module.exports = function(app) {
+			app.route('/users').post(users.create);
+		};
+		
+	express.js
+		require('../app/routes/users.server.routes.js')(app);
+		
+	Test using curl command
+		$ curl -X POST -H "Content-Type: application/json" -d
+		'{"firstName":"First", "lastName":"Last","email":"user@example.com","user
+		name":"username","password":"password"}' localhost:3000/users
+		
+	Finding multiple user documents using find()
+		The find() method is a model method that retrieves multiple documents stored in the same collection using a query and is a Mongoose implementation of the MongoDB find() collection method.
+		User.find({}, function(err, users) {}
+		
+	Advanced querying using find(), can accept up to four parameters:
+	- Query: This is a MongoDB query object
+	- [Fields]: This is an optional string object that represents the document fields to return
+	- [Options]: This is an optional options object
+	- [Callback]: This is an optional callback function
+	
+	User.find({}, 'username email', {
+		skip: 10,
+		limit: 10
+	}, function(err, users) {
+		...
+	});
+	
+	http://mongoosejs.com/docs/api.html
+	
+Reading a single user document using findOne()
+
+	app.route('/users/:userId').get(users.read);
+	// middleware 
+	app.param('userId', users.userByID); 
+	
+	In Express, adding a colon before a substring in a route definition means that this substring will be handled as a request parameter. To handle the population of the req.user object, you use the app.param() method that defines a middleware to be executed before any other middleware that uses that parameter. 
+
+Updating an existing user document
+	User.findByIdAndUpdate(req.user.id, req.body, function(err, user) {}
+
+	Test
+		$ curl -X PUT -H "Content-Type: application/json" -d '{"lastName":
+		"Updated"}' localhost:3000/users/[id]
+
+Deleting an existing user document
+	remove(), findOneAndRemove(), and findByIdAndRemove()
+	req.user.remove(function(err) {}
+
+	Test
+		$ curl -X DELETE localhost:3000/users/[id]
+	
+Defining default values
+	created: {
+		type: Date,
+		default: Date.now
+	}	
+
+	From now on, every new user document will be created with a default creation date that represents the moment the document was created.
+	You should also notice that every user document created prior to this schema change will be assigned a created field representing the moment you queried for it, since these documents don't have the created field initialized.
+
+Using schema modifiers
+	Sometimes, you may want to perform a manipulation over schema fields before
+	saving them or presenting them to the client. For this purpose, Mongoose uses a
+	feature called modifiers. A modifier can either change the field's value before saving
+	the document or represent it differently at query time.
+
+Predefined modifiers
+	username: {
+		type: String,
+		trim: true
+	},
+
+Custom setter modifiers
+	Predefined modifiers are great, but you can also define your own custom setter
+	modifiers to handle data manipulation before saving the document.
+
+	website: {
+		type: String,
+		set: function(url) {
+
+Custom getter modifiers
+	Getter modifiers are used to modify existing data before outputting the documents to
+	next layer.
+
+	website: {
+		type: String,
+		get: function(url) {}
+		
+	UserSchema.set('toJSON', { getters: true });
+
+Adding virtual attributes
+	Sometimes you may want to have dynamically calculated document properties,
+	which are not really presented in the document. These properties are called
+	virtual attributes.	
+
+	UserSchema.virtual('fullName').get(function() {
+		return this.firstName + ' ' + this.lastName;
+	});
+	UserSchema.set('toJSON', { getters: true, virtuals: true });
+	
+	UserSchema.virtual('fullName').get(function() {
+		return this.firstName + ' ' + this.lastName;
+	}).set(function(fullName) {
+		var splitName = fullName.split(' ');
+		this.firstName = splitName[0] || '';
+		this.lastName = splitName[1] || '';
+	});	
+
+	Virtual attributes are a great feature of Mongoose, allowing you to modify document
+	representation as they're being moved through your application's layers without
+	getting persisted to MongoDB.
+
+Optimizing queries using indexes
+
+The basic example of indexing is the unique index
+	unique: true
+	
+	This will tell MongoDB to create a unique index for the username field of the users
+	collections. Mongoose also supports the creation of secondary indexes using the
+	index property.
+
+	email: {
+		type: String,
+		index: true
+	}
+
+	Problem:
+	1. might encounter some errors, if you define a unique index on a collection where data is already stored
+	2. Another common issue is Mongoose's automatic creation of indexes when the application
+	starts, a feature that could cause major performance issues when running in a production environment.
+
+Defining custom model methods
+	
+Defining custom static methods
+	To add a static method, you will need to declare it as a member of your schema's statics property.
+
+	UserSchema.statics.findOneByUsername = function (username,	callback) {
+		this.findOne({ username: new RegExp(username, 'i') }, callback);
+	};
+	
+	User.findOneByUsername('username', function(err, user){
+	...
+	});
+
+Defining custom instance methods
+	To add an instance method, you will need to declare it as a member of your schema's methods property.
+	
+	UserSchema.methods.authenticate = function(password) {
+		return this.password === password;
+	};
+
+	user.authenticate('password');
+
+Model validation
+	When users input information to your application, you'll often have to validate that information before passing it on to MongoDB.
+	Validators are defined at the field level of a document and are executed when the
+	document is being saved. If a validation error occurs, the save operation is aborted
+	and the error is passed to the callback.
+
+Predefined validators
+	To validate field existence in Mongoose: 
+	required: true
+	
+	match validators:
+	match: /.+\@.+\..+/
+	
+	Allow the insertion of only these three possible strings, and thus prevent you from saving the document.
+	enum: ['Admin', 'Owner', 'User']
+	
+	Custom validators
+	The validate property value should be an array consisting of a validation function
+	and an error message.
+
+	password: {
+		type: String,
+		validate: [
+			function(password) {
+				return password.length >= 6;
+			},
+			'Password should be longer'
+		]
+	},	
+	
+Using Mongoose middleware
+	Mongoose middleware are functions that can intercept the process of the init, validate, save, and remove instance methods. Middleware are executed at the instance level and have two types: pre middleware and post middleware.
+
+	Using pre middleware
+	Pre middleware gets executed before the operation happens.
+	
+	Using post middleware
+	A post middleware gets executed after the operation happens.
+	
+	Using Mongoose DBRef
+	Mongoose includes support for DBRefs using the ObjectID schema type and the use of the ref property.
+	author: {
+		type: Schema.ObjectId,
+		ref: 'User'
+	}
+
+	Notice the ref property telling Mongoose that the author field will use the User model to populate the value.
+
+	Using this new schema is a simple task.
+	
+		var user = new User();
+		user.save();
+		var post = new Post();
+		post.author = user;
+		post.save();
+	
+	Since the DBRef is only an ObjectID reference to a real document, Mongoose will
+	have to populate the post instance with the user instance. To do so, you'll have
+	to tell Mongoose to populate the post object using the populate() method when
+	retrieving the document.	
+
+		Post.find().populate('author').exec(function(err, posts) {
+		...
+		});	
+
+6. Managing User Authentication Using Passport 
+	
+Introducing Passport
+	Passport is a Node.js module that uses the middleware design pattern to authenticate requests.
+	It allows developers to offer various authentication methods using a mechanism called strategies, which allows you to implement a complex authentication layer while keeping your code clean and simple.
+
+Installing Passport
+	passport
+	passport-local
+
+Configuring Passport
+	passport = require('passport');
+	
+	//responsible for bootstrapping the Passport module
+	app.use(passport.initialize());
+	
+	//using the Express session to keep track of your user's session.
+	app.use(passport.session());
+	
+Understanding Passport strategies
+	To offer its various authentication options, Passport uses separate modules that
+	implement different authentication strategies.
+	
+Configuring Passport's local strategy
+	
+	local.js
+	LocalStrategy = require('passport-local').Strategy,
+	passport.use(new LocalStrategy(function(username, password, done) {
+	
+	The callback function accepts three arguments—username, password, and a done
+	callback—which will be called when the authentication process is over.
+	
+config/passport.js
+	passport.serializeUser(function(user, done) {
+		done(null, user.id);
+	});
+	passport.deserializeUser(function(id, done) {
+		User.findOne({
+		_id: id
+		}, '-password -salt', function(err, user) {
+		done(err, user);
+		});
+	});
+
+	In the preceding code snippet, the passport.serializeUser() and passport.deserializeUser() methods are used to define how Passport will handle user	serialization. When a user is authenticated, Passport will save its _id property to the	session. Later on when the user object is needed, Passport will use the _id property to grab the user object from the database.
+
+Adapting the User model
+	
+Creating the authentication views
+
+The signout() method is also simple and uses the req.logout() method, which is provided by the Passport module to invalidate the authenticated session.
+
+The req.login() method is exposed by the Passport module and is used to establish a successful login session. After the login operation is completed, a user object will be signed to the req.user object.
+
+The req.login() will be called automatically while using the passport.authenticate() method, so a manual call for req.login() is primarily used when registering new users.
+
+Displaying flash error messages
+
+	The Connect-Flash module is a node module that allows you to store temporary
+	messages in an area of the session object called flash. Messages stored on the flash
+	object will be cleared once they are presented to the user. This architecture makes the
+	Connect-Flash module perfect to transfer messages before redirecting the request to
+	another page.
+
+	Configuring Connect-Flash module
+
+		flash = require('connect-flash')
+		app.use(flash())
+		
+	Using Connect-Flash module
+		Once installed, the Connect-Flash module exposes the req.flash() method, which allows you to create and retrieve flash messages.
+		
+		req.flash('error', message);
+	
+Wiring the user's routes
+
+	app.route('/signin')
+		.get(users.renderSignin)
+		.post(passport.authenticate('local', {
+			successRedirect: '/',
+			failureRedirect: '/signin',
+			failureFlash: true
+		}));
+	
+	When the passport.authenticate() method is executed, it will try to authenticate
+	the user request using the strategy defined by its first argument.
+	
+Understanding Passport OAuth strategies
+
+	OAuth is an authentication protocol that allows users to register with your web
+	application using an external provider, without the need to input their username and
+	password.
+
+	Before you begin, you will have to contact the OAuth provider and create a
+	developer application. This application will have both an OAuth client ID
+	and an OAuth client secret, which will allow you to verify your application
+	against the OAuth provider.
+
+Handling OAuth user creation
+	Since users are signing up using their profile from other providers, the profile details are already present, which means you will need to validate them differently.
+	
+Using Passport's Facebook strategy
+	passport-facebook
+	
+	Configuring Passport's Facebook strategy
+	Need Facebook application ID and secret to authenticate your users via Facebook.
+	
+	The callbackURL property will be passed to the Facebook OAuth service, which will redirect to that URL after the authentication process is over.
+	
+	The FacebookStrategy constructor takes two arguments: the Facebook application information and a callback function that it will call later when trying to authenticate a user.
+	
+	Wiring Passport's Facebook strategy routes
+	app.get('/oauth/facebook', passport.authenticate('facebook', {
+		failureRedirect: '/signin'
+	}));
+	app.get('/oauth/facebook/callback', passport.authenticate('facebook',
+	{
+		failureRedirect: '/signin',
+		successRedirect: '/'
+	}));
+	
+	The first route will use the passport.authenticate() method to start the user authentication process, while the second route will use the passport.authenticate() method to finish the authentication process once the user has linked their Facebook profile.
+
+	<a href="/oauth/facebook">Sign in with Facebook</a>
+	This will allow your users to click on the link and register with your application via their Facebook profile.
+
+Using Passport's Twitter strategy
+
+	passport-twitter
+	https://dev.twitter.com/
+	
+	passport-google-oauth
+	
+7. Introduction to AngularJS
+	The nature of their rich web applications raised the need for a more structured framework that would reduce redundant work and keep the project code organized.
+	The idea was to bridge the gap between JavaScript and HTML and to help popularize single-page application development.
+	
+Introducing AngularJS
+	AngularJS is a frontend JavaScript framework designed to build single-page applications using the MVC architecture.
+	
+Key concepts of AngularJS
+
+The core module of AngularJS
+	The core module of AngularJS is loaded with everything you need to bootstrap your
+	application. It contains several objects and entities that enable the basic operation of
+	an AngularJS application.
+	
+The angular global object
+
+AngularJS modules
+	With AngularJS, everything is encapsulated in modules.
+	
+Application modules
+	Every AngularJS application needs at least one module to bootstrap, and we'll refer
+	to this module as the application module.
+
+	angular.module(name, [requires], [configFn])
+	name: This is a string defining the module name
+	requires: This is an array of strings defining other modules as dependencies
+	configFN: This is a function that will run when the module is being registered
+	
+Third-party modules    
+
+Two-way data binding
+	Two-way data binding enables AngularJS applications to always keep the model synchronized with the view and vice versa.
+	This means that what the view renders is always the projection of the model. 
+
+Dependency injection
+	The main principle behind dependency injection is the inversion of control in a software development architecture. 
+	
+Dependency injection in AngularJS
+	The controller's constructor function is being injected with an AngularJS object named $scope.	
+	AngularJS knows how to inject the right object here because its injector object can read the function argument's names.
+	Instead of passing a function as a second argument, you can pass an annotated array of dependencies that won't change when minified and will let the injector know which dependencies this controller constructor is expecting.	
+	
+AngularJS directives
+	AngularJS extends HTML
+	AngularJS directives are markers, usually attributes or element names, which enable the AngularJS compiler to attach a specified behavior to a DOM element and its children elements.
+	Basically, directives are the way AngularJS interacts with DOM elements and are what enables the basic operation of an AngularJS application.
+	
+Core directives
+	
+<body ng-app></body>
+	Use as the root application element 
+	
+ng-controller: This tells the compiler which controller class to use to manage this element view
+ng-model: This is placed on input elements and binds the input value to a property on the model
+ng-show/ng-hide: This shows and hides an element according to a Boolean expression 
+ng-repeat: This iterates over a collection and duplicates the element for each item
+
+Custom directives
+Custom directives make it possible for you to obfuscate redundant code, keep your application cleaner and more readable, and improve the way you can test your application.
+
+Bootstrapping an AngularJS application
+	Bootstrapping an AngularJS application means that we tell Angular which DOM element is the root element of the application and when to initiate the Angular application.
+	This could be done either automatically after the page assets are loaded or manually using JavaScript.
+	
+Automatic bootstrap
+	To automatically bootstrap the AngularJS application, you will need to use the
+ng-app directive. Once the application JavaScript files are loaded, AngularJS will
+look for DOM elements marked with this directive and will bootstrap an individual
+application for each element.
+
+Manual bootstrap
+	angular.bootstrap(element, [modules], [config])
+	Usually, we'll call this function in when the page is loaded using the jqLite
+document-ready event.
+	
+Installing AngularJS
+	Since AngularJS is a frontend framework, installing it requires the inclusion of Angular's JavaScript files in the main page of your application.
+
+Meeting the Bower dependencies manager
+	Bower is a package manager tool, designed to download and maintain frontend, third-party libraries.
+	$ npm install -g bower
+	
+Configuring the Bower dependencies manager
+	.bowerrc
+		{
+			directory: public/lib
+		}
+	
+Installing AngularJS using Bower
+	$ bower install
+	
+	Since AngularJS is a single-page framework, the entire application logic will take place in the same Express application page.
+	
+Configuring AngularJS
+	<script type="text/javascript" src="/lib/angular/angular.js"></script>
+	
+Structuring an AngularJS application
+	Since AngularJS is a frontend framework, you'll use the public folder of our Express
+	application as the root folder for the AngularJS application so that every file is
+	available statically.	
+
+	A vertical structure positions every file according to its functional context,
+	so different types of entities can be sorted together according to their role in a feature
+	or section.
+	
+Bootstrapping your AngularJS application
+	
+	var mainApplicationModuleName = 'mean';
+	var mainApplicationModule = angular.module(mainApplicationModuleName, []);
+	angular.element(document).ready(function() {
+		angular.bootstrap(document, [mainApplicationModuleName]);
+	});	
+	
+AngularJS MVC entities
+
+AngularJS views
+	AngularJS views are HTML templates rendered by the AngularJS compiler to produce a manipulated DOM on your page.
+
+	<section ng-include="'example/views/example.client.view.html'"></section>
+	
+	ng-include directive loads a template from a specified path, compiles it into a view, and then places the rendered result inside the directive DOM element.
+	
+AngularJS controllers and scopes
+	Controllers are basically constructor functions, which AngularJS uses to create a new instance of a controller object.
+	The AngularJS team rightfully defines a scope as the glue between the view and the controller.
+	
+	Controller instances are usually created when you use the ng-controller directive.
+	The AngularJS compiler uses the controller name from the directive to instantiate a
+	new controller instance, while utilizing dependency injection to pass the scope object
+	to that controller instance. The controller is then used either to set up the scope initial
+	state or to extend its functionality.
+
+	Since DOM elements are arranged in a hierarchical structure, scopes mimic that hierarchy.
+
+AngularJS routing
+	AngularJS team developed the ngRoute module that allows you to define URL paths and their corresponding templates, which will be rendered whenever the user navigates to those paths.
+	
+	Since AngularJS is a single-page framework, ngRoute will manage the routing
+	entirely in the browser. This means that instead of fetching web pages from the
+	server, AngularJS will load the defined template, compile it, and place the result
+	inside a specific DOM element. The server will only serve the template as a static
+	file but won't respond to the URL changing.
+
+Installing the ngRoute module
+
+	angular-route
+	$ bower update
+	<script type="text/javascript" src="/lib/angular-route/angularroute.js"></script>
+	
+Configuring the URL scheme	
+The ngRoute module's default behavior is to use the URL hash part for routing. Since
+it is usually used for in-page linking, when the hash part changes, the browser will
+not make a request to the server.	
+
+SEO:the major search engine makers offer developers a way to mark their application as a
+single-page application. That way, the search engine crawlers know your application
+is using AJAX to render new paths and can wait for the result before it leaves your
+page. To mark your application routes as single-page application routes, you will
+need to use a routing scheme called Hashbangs. Hashbangs are implemented by
+adding an exclamation mark right after the hash sign, so an example URL would
+be http://localhost:3000/#!/example.
+
+AngularJS application routes
+	
+	angular.module('example').config(['$routeProvider',
+		function($routeProvider) {
+			$routeProvider.
+			when('/', {
+			templateUrl: 'example/views/example.client.view.html'
+			}).
+			otherwise({
+			redirectTo: '/'
+			});
+		}
+	]);	
+	
+	Another entity that is packed in the ngRoute module is the ng-view directive.
+	
+	The ng-view directive tells the AngularJS router which DOM element to use to render the routing views. When the user navigates to a specified URL, AngularJS will render the template inside the DOM element marked with this directive.
+	
+	<section ng-view></section>
+	
+AngularJS services
+	AngularJS services are singleton entities that are usually used to share information
+	between different entities of the same AngularJS application. Services can be used
+	to fetch data from your server, share cached data, and inject global objects into
+	other AngularJS components.
+
+AngularJS prebundled services
+	• $http: This is an AngularJS service used to handle AJAX requests
+	• $resource: This is an AngularJS service used to handle RESTful APIs
+	• $location: This is an AngularJS service used to handle URL manipulations
+	• $q: This is an AngularJS service used to handle promises
+	• $rootScope: This is an AngularJS service that returns the root scope object
+	• $window: This is an AngularJS service that returns the browser window object
+
+Creating AngularJS services
+	• provider(): This is the most verbose method, which provides the most comprehensive way to define a service.
+	• service(): This is used to instantiate a new singleton object from the service function. You should use it when you're defining a service as a prototype.
+	• factory(): This is used to provide the value returning from the invoked service function. You should use it when you want to share objects and data across your application.
+
+	angular.module('example').factory('ExampleService', [
+		function() {
+			return true;
+		}
+	]);
+
+	angular.module('example').service('ExampleService', [
+		function() {
+			this.someValue = true;
+			this.firstMethod = function() {
+			}
+			this.secondMethod = function() {
+			}
+		}
+	]);	
+
+Using AngularJS services
+Using AngularJS services is very easy since they can be injected into AngularJS components.	
+	
+Managing AngularJS authentication
+
+	While the server holds the information about the authenticated user, the AngularJS application is not aware of that information.
+	
+	A better solution would be to make the Express application render the user object directly in the EJS view and then use an AngularJS service to wrap that object.
+
+Adding the Authentication service
+	<script type="text/javascript">
+		window.user = <%- user || 'null' %>;
+	</script>
+	
+Using the Authentication service
+	
+8. Creating a MEAN CRUD Module
+
+Introducing CRUD modules
+	CRUD modules are the basic building block of a MEAN application. Each CRUD
+	module consists of a two MVC structure supporting the module Express and
+	AngularJS functionality.
+	
+	The Express part is built upon a Mongoose model, an Express controller, and an Express routes file.
+	The AngularJS module is a bit more complex and contains a set of views, and an AngularJS controller, service, and routing configuration.
+	
+Setting up the Express components
+	First, you'll create a Mongoose model that will be used to save and validate your articles.
+	Then, you'll move on to the Express controller that will deal with the business logic of your module.
+	Finally, you'll wire the Express routes to produce a RESTful API for your
+	controller methods.
+	
+Creating the Mongoose model
+	
+Setting up the Express controller
+	The Express controller is responsible for managing articles related functionality
+	on the server side. It is built to offer the basic CRUD operations to manipulate
+	the MongoDB article documents.
+	
+The error handling method of the Express controller
+	In order to handle Mongoose errors, it is preferable to write a simple error handling
+	method that will take care of extracting a simple error message from the Mongoose
+	error object and provide it to your controller methods.
+	
+The create() method of the Express controller
+	var article = new Article(req.body);
+	article.creator = req.user;
+	article.save(function(err) {
+	
+The list() method of the Express controller
+	Article.find().sort('-created').populate('creator', 'firstName
+		lastName fullName').exec(function(err, articles) {
+	
+The read() middleware of the Express controller
+	Express router provides the app.param() method for handling route parameters.
+	
+The update() method of the Express controller
+	
+The delete() method of the Express controller
+	article.remove(function(err) {
+	
+Implementing an authentication middleware
+	exports.requiresLogin = function(req, res, next) {
+		if (!req.isAuthenticated()) {
+			return res.status(401).send({
+				message: 'User is not logged in'
+			});
+		}
+		next();
+	}
+	
+	The requiresLogin() middleware uses the Passport initiated req.isAuthenticated() method to check whether a user is currently authenticated. 
+
+Implementing an authorization middleware
+
+	The hasAuthorization() middleware is using the req.article and req.user
+	objects to verify that the current user is the creator of the current article.
+
+Wiring the Express routes
+	The RESTful API provides a coherent service structure that represents a set of actions you can perform on an application resource.
+	
+	This means the API uses a predefined route structure along with the HTTP method
+	name to provide context for HTTP requests.
+	
+Configuring the Express application
+
+Introducing the ngResource module
+ngResource provides the developer with an easy way to communicate with a RESTful data source.
+
+	angular-resource
+	$ bower update
+	
+Using the $resource service
+	The $resource factory uses a base URL and a set of configuration options to allow the developer easy communication with RESTful endpoints.
+
+The $resource factory method accepts four arguments:
+	• Url: This is a parameterized base URL with parameters prefixed by a
+	colon such as /users/:userId
+	• ParamDefaults: These are the default values for the URL parameters,
+	which can include hardcoded values or a string prefixed with @ so the
+	parameter value is extracted from the data object
+	• Actions: These are objects representing custom methods you can use to
+	extend the default set of resource actions
+	• Options: These are objects representing custom options to extend the
+	default behavior of $resourceProvider	
+	
+The returned ngResource object will have several methods to handle the default
+RESTful resource routes, and it can optionally be extended by custom methods.
+	• get()
+	• save()
+	• query()
+	• remove()
+	• delete()
+	
+Calling each of these methods will use the $http service and invoke an HTTP
+request with the specified HTTP method, URL, and parameters. The $resource
+instance method will then return an empty reference object that will be populated
+once the data is returned from the server. You can also pass a callback function
+that will get called once the reference object is populated.
+
+	var Users = $resource('/users/:userId', {
+		userId: '@id'
+	});
+	
+	var user = Users.get({
+		userId: 123
+	}, function() {
+		user.abc = true;
+		user.$save();
+	});
+	
+Implementing the AngularJS MVC module
+
+	This module will contain an AngularJS service that will communicate with the Express API using the $resource factory, an AngularJS controller that will contain the client-side module logic, and a set of views that provide your users with an interface to perform CRUD operations.
+	
+	articles.client.module.js
+	angular.module('articles', []);
+	
+Creating the AngularJS module service
+	
+	angular.module('articles').factory('Articles', ['$resource',
+	function($resource) {
+		return $resource('api/articles/:articleId', {
+			articleId: '@_id'
+		}, {
+			update: {
+				method: 'PUT'
+			}
+		});
+	}]);	
+	
+Setting up the AngularJS module controller
+	The controller should be able to provide you with all the methods needed to perform CRUD operations.
+	
+• $routeParams: This is provided with the ngRoute module and holds
+references to route parameters of the AngularJS routes you'll define next
+• $location: This allows you to control the navigation of your application
+• Authentication: You created this service in the previous chapter and it
+provides you with the authenticated user information
+• Articles: You created this service in the previous section and it provides
+you with a set of methods to communicate with RESTful endpoints
+
+The create() method of the AngularJS controller
+	Let's go over the create() method functionality. First, you used the title and content
+form fields, and then the Articles resource service to create a new article resource.
+Then, you used the article resource $save() method to send the new article object
+to the corresponding RESTful endpoint, along with two callbacks. The first callback
+will be executed when the server responds with a success (200) status code, marking
+a successful HTTP request. It will then use the $location service to navigate to the
+route that will present the created article. The second callback will be executed when
+the server responds with an error status code, marking a failed HTTP request. The
+callback will then assign the error message to the $scope object, so the view will be
+able to present it to the user.
+
+The find() and findOne() methods of the AngularJS controller
+
+The update() method of the AngularJS controller
+	$scope.article.$update(function() {
+	
+The delete() method of the AngularJS controller
+	article.$remove(function() {
+
+Implementing the AngularJS module views
+
+The create-article view
+The view-article view
+	<section data-ng-controller="ArticlesController" data-nginit="findOne()">
+	<h1 data-ng-bind="article.title"></h1>
+
+The edit-article view
+	
+The list-articles view
+
+Wiring the AngularJS module routes
+	To complete your CRUD module, you will need to connect your views to your
+AngularJS application routing mechanism. This means that you'll need to have a
+route specified for each view you created.
+
+Finalizing your module implementation
+	$scope.authentication = Authentication;
+
+9. Adding Real-time Functionality Using Socket.io
+	
+	Socket.io enables Node.js developers to support real-time communication using WebSockets in modern browsers and legacy fallback protocols in older browsers.
+
+Introducing WebSockets
+	This means that unlike the common HTTP behavior, the server won't wait for the
+	browser's requests. Instead, it will send new data to the browser whenever this
+	data becomes available.
+
+	In XHR polling, the browser makes periodic requests to the server. The server then returns an empty response unless it has new data to send back.
+
+	In XHR long polling, the browser makes an XHR request to the server, but a
+	response is not sent back unless the server has a new data.
+
+	In browsers that support the WebSockets protocol, the initial connection between
+	the server and browser is made over HTTP and is called an HTTP handshake.
+	Once the initial connection is made, the browser and server open a single ongoing
+	communication channel over a TCP socket. Once the socket connection is
+	established, it enables bidirectional communication between the browser and server.
+	This enables both parties to send and retrieve messages over a single communication
+	channel. This also helps to lower server load, decrease message latency, and unify
+	PUSH communication using a standalone connection.
+
+	WebSockets still suffer from two major problems:
+	- First and foremost is browser compatibility.
+	- The second problem is HTTP proxies, firewalls, and hosting providers.
+
+Introducing Socket.io
+	
+	When you include the Socket.io module, it provides you with two objects: a socket
+	server object that is responsible for the server functionality and a socket client object
+	that handles the browser's functionality. We'll begin by examining the server object.
+
+The Socket.io server object
+
+Socket.io handshaking
+	When a client wants to connect the Socket.io server, it will first send a handshake
+	HTTP request. The server will then analyze the request to gather the necessary
+	information for ongoing communication. It will then look for configuration
+	middleware that is registered with the server and execute it before firing the
+	connection event. When the client is successfully connected to the server, the
+	connection event listener is executed, exposing a new socket instance.
+
+The Socket.io configuration middleware
+	io.use()
+	
+The Socket.io client object
+	You start by including the Socket.io client JavaScript file, which is served by the Socket.io server. The Socket.io JavaScript file exposes an io() method that connects to the Socket.io server and creates the client socket object.
+
+	Socket.io uses a structure that mimics the WebSockets protocol and fires events messages across the server and client objects.
+
+	The system events on the socket server are as follows:
+	• io.on('connection', ...): This is emitted when a new socket is connected
+	• socket.on('message', ...): This is emitted when a message is sent using the socket.send() method
+	• socket.on('disconnect', ...): This is emitted when the socket is disconnected
+
+Handling events
+	Socket.io exposes two methods, both on the client and server objects. 
+	The first method is the on() method, which binds event handlers with events and the second method is the emit() method, which is used to fire events between the server and client objects.
+	socket.on('customEvent', function(customEventData) {}
+	
+Emitting events
+	socket.emit('customEvent', customEventData);
+	io.emit('customEvent', customEventData);
+	socket.broadcast.emit('customEvent', customEventData);
+	
+	Socket.io offers two options to group sockets together: namespaces and rooms.
+
+Socket.io namespaces
+Socket.io server namespaces
+	io.of('/someNamespace').on('connection', function(socket){
+	
+Socket.io client namespaces
+	var someSocket = io('/someNamespace');
+	
+Socket.io rooms
+	Socket.io rooms allow you to partition connected sockets into different groups in a dynamic way.
+
+Joining and leaving rooms
+	
+Configuring the Socket.io server
+
+Configuring the Socket.io session
+	To configure your Socket.io session to work in conjunction with your Express
+	sessions, you have to find a way to share session information between Socket.io and
+	Express. Since the Express session information is currently being stored in memory,
+	Socket.io will not be able to access it properly. So, a better solution would be to store
+	the session information in your MongoDB. Fortunately, there is node module named
+	connect-mongo that allows you to store session information in a MongoDB instance
+	almost seamlessly. To retrieve the Express session information, you will need some
+	way to parse the signed session cookie information. For this purpose, you'll also
+	install the cookie-parser module, which is used to parse the cookie header and
+	populate the HTTP request object with cookies-related properties.
+
+Configuring the connect-mongo module
+	session = require('express-session'),
+	MongoStore = require('connect-mongo')(session),
+
+	var mongoStore = new MongoStore({
+		db: db.connection.db
+	});
+	app.use(session({
+		saveUninitialized: true,
+		resave: true,
+		secret: config.sessionSecret,
+		store: mongoStore
+	}));
+
+Configuring the Socket.io session
+
+Building a Socket.io chat	
+
+10. Testing MEAN Applications
+	
+Introducing JavaScript testing
+
+Test-driven development (TDD), the developer starts by writing a (initially failing) test, which defines the requirements expected from an isolated unit of code.
+The developer is then required to implement the minimum amount of code that passes the test. When the test is successfully passed, the developers clean up the code and verify that all the tests are passing.
+
+BDD, behavior-driven development, helps developers identify the scope of
+their unit tests and express their test process in a behavioral terminology.
+
+Basically TDD provides the wireframe for writing tests, and BDD provides the vocabulary
+to shape the way tests are written.
+
+Test frameworks
+	Test frameworks that allow you to write your tests in a structured
+	and common way. These test frameworks usually provide a set of methods to
+	encapsulate tests. It is also very common for a test framework to provide some
+	sort of API that enables you to run tests and integrate the results with other tools
+	in your development cycle.
+
+Assertion libraries
+	The developer uses assertion expressions to indicate
+	a predicate that should be true in the test context. When running the test, the
+	assertion is evaluated, and if it turns out to be false, the test will fail.
+
+Test runners
+	Test runners are utilities that enable the developer to easily run and evaluate
+	tests. A test runner usually uses a defined testing framework along with a set of
+	preconfigured properties to evaluate test results in different contexts.
+
+Testing your Express application
+	So, to properly
+	cover your Express application code, you will need to write tests that cover both
+	models and controllers. In order to do so, you will use Mocha as your test framework,
+	the Should.js assertion library for your models, and the SuperTest HTTP assertion
+	library for your controllers.
+
+Introducing Mocha
+	The BDD interface for Mocha tests includes several descriptive methods, which enable
+	the developer to easily describe the test scenario.
+
+	• describe(description, callback): This is the basic method that wraps
+	each test suite with a description. The callback function is used to define
+	test specifications or subsuites.
+	• it(description, callback): This is the basic method that wraps each
+	test specification with a description. The callback function is used to define
+	the actual test logic.
+	• before(callback): This is a hook function that is executed once before
+	all the tests in a test suite.
+	• beforeEach(callback): This is a hook function that is executed before
+	each test specification in a test suite.
+	• after(callback): This is a hook function that is executed once after all
+	the tests in a test suite are executed.
+	• afterEach(callback): This is a hook function that is executed after each
+	test specification in a test-suite is executed.
+
+Introducing Should.js
+	The Should.js library, also developed by TJ Holowaychuk, aims to help developers
+	write readable and expressive assertion expressions.
+		user.should.be.an.Object.and.have.property('name', 'tj');
+	
+Introducing SuperTest
+	This means that instead of testing objects, it will help you
+	to create assertion expressions that test HTTP endpoints
+
+	request(app).get('/user')
+	.set('Accept', 'application/json')
+	.expect('Content-Type', /json/)
+	.expect(200, done);
+
+Installing Mocha
+	Mocha is basically a Node.js module that provides command-line capabilities to run tests.
+	$ npm install –g mocha
+	
+Installing the Should.js and SuperTest modules	
+	"devDependencies": {
+		"should": "~4.0.4",
+		"supertest": "~0.13.0"
+	}	
+
+Configuring your test environment
+
+Writing your first Mocha unit test
+	
+Testing the Express controller
+	
+Running your Mocha test
+	$ NODE_ENV=test mocha --reporter spec app/tests
+	With the --reporter flag, telling Mocha to use the spec reporter and the path to your tests folder.
+
+Testing your AngularJS application
+
+Introducing the Jasmine framework
+	Jasmine uses the same terminology as Mocha's BDD interface, including
+	the describe(), it(), beforeEach(), and afterEach() methods. However, unlike
+	Mocha, Jasmine comes prebundled with assertion capabilities using the expect()
+	method chained with assertion methods called Matchers. Matchers are basically
+	functions that implement a Boolean comparison between an actual object and an
+	expected value.	
+
+	http://jasmine.github.io/2.0/introduction.html.
+
+AngularJS unit tests
+
+Introducing Karma test runner
+	The Karma test runner is a utility developed by the AngularJS team that helps
+	developers with executing tests in different browsers.
+
+Installing the Karma command-line tool
+	$ npm install -g karma-cli
+
+	"karma": "~0.12.23",
+	"karma-jasmine": "~0.2.2",
+	"karma-phantomjs-launcher": "~0.1.4"
+
+Mocking AngularJS components
+	While testing an AngularJS application, it is recommended that unit tests execute
+	quickly and separately from the backend server. This is because we want the unit
+	tests to be as isolated as possible and work in a synchronous manner. This means
+	we need to control the dependency injection process and provide mock components
+	that emulate real components' operation. For instance, most of the components that
+	communicate with the backend server are usually using the $http service or some
+	sort of abstraction layer, such as the $resource service. Furthermore, the $http
+	service sends requests to the server using the $httpBackend service. This means
+	that by injecting a different $httpBackend service, we can send fake HTTP requests
+	that won't hit a real server.
+
+Introducing ngMock
+
+Writing AngularJS unit tests
+
+Testing services
+Testing routes
+Testing directives
+
+AngularJS E2E tests
+	You will need to find a way to test features across the entire application, and this is why E2E tests are so important.
+	
+Introducing the Protractor test runner
+	Protractor is a dedicated E2E test runner that simulates human interactions and runs tests using the Jasmine test framework. 
+	It is basically a Node.js tool, which uses a neat library called WebDriver. WebDriver is an open source utility that allows programmable control over a web browser behavior.
+	
+Protractor also provides you with several global objects as follows:
+	browser:
+	element:
+	by:
+	protractor:
+	
+Installing the Protractor test runner
+	$ npm install -g protractor
+	
+https://code.google.com/p/selenium/wiki/WebDriverJs
+	$ webdriver-manager update
+	
+Configuring the Protractor test runner
+	protractor.conf.js
+	
+Writing your first E2E test
+
+Running your AngularJS E2E tests
+	$ NODE_ENV=test node server
+	$ protractor
+
+11. Automating and Debugging MEAN Applications
+	
+Introducing the Grunt task runner
+	Automation of repetitive tasks
+	Grunt is a Node.js commandline tool that uses custom and third-party tasks to automate a project's build process.
+	
+Installing the Grunt task runner
+	$ npm install -g grunt-cli
+	
+	"grunt": "~0.4.5",
+	"grunt-env": "~0.4.1"
+
+Configuring Grunt
+	Gruntfile.js
+	$ grunt
+	
+Running your application using Grunt
+	Nodemon is a Node.js command-line tool that functions as a wrapper to the simple node command-line tool, but watches for changes in your application files. When Nodemon detects file changes, it automatically restarts the node server to update the application.
+	
+	grunt-nodemon
+	grunt.loadNpmTasks('grunt-nodemon'); 
+	
+	$ grunt
+	This will run both the grunt-env and grunt-nodemon tasks and start your application server.
+	
+Testing your application using Grunt
+
+	$ grunt test
+	
+Linting your application using Grunt
+	In software development, linting is the identification of suspicious code usage using dedicated tools.
+	In a MEAN application, linting can help you avoid common mistakes and coding errors in your daily development cycles.
+	
+	"grunt-contrib-jshint": "~0.10.0",
+	"grunt-contrib-csslint": "~0.2.0"
+	
+	grunt.registerTask('lint', ['jshint', 'csslint']);
+	$ grunt lint
+	This will run the jshint and csslint tasks and will report the results in your command-line tool.
+
+Watching file changes using Grunt
+	Install the grunt-contrib-watch module, which will be used to watch for file changes, and the grunt-concurrent module that is used to run multiple Grunt tasks concurrently.
+	
+	"grunt-contrib-watch": "~0.6.1",
+	"grunt-concurrent": "~1.0.0"
+	
+	grunt.registerTask('default', ['env:dev', 'lint', 'concurrent']);
+	
+	http://gruntjs.com
+	
+Debugging Express with node-inspector
+	Node-inspector is a debugging tool for Node.js applications that use the Blink (a WebKit Fork) Developer Tools.
+
+	• Source code files navigation
+	• Breakpoints manipulation
+	• Stepping over, stepping in, stepping out, and resuming execution
+	• Variable and properties inspection
+	• Live code editing
+
+Installing node-inspector's grunt task
+	"grunt-node-inspector": "~0.1.5"
+	
+Configuring node-inspector's grunt task
+	https://github.com/node-inspector/node-inspector
+	
+Running the debug grunt task
+	$ grunt debug
+	This will run your application in a debug mode and start the node-inspector server.
+	http://127.0.0.1:8080/debug?port=5858 
+	
+Debugging AngularJS with Batarang
+	
+	Batarang will only work on the Google Chrome browser.
+	Batarang extends the Chrome Developer Tools with a new tab where you can debug different aspects of your AngularJS application.
+	
+Debugging AngularJS with Batarang
+	
+Batarang Performance
+	
+Batarang Dependencies 
+Batarang is a simple yet powerful tool. Used right, it can save you a lot of time of
+endlessly looking around and using console logging.
+
+Since it's the last chapter of this book, you should now know how to build, run, test,
+debug, and automate your MEAN application.
+
+The next step is up to you.
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+	
+
+	
+	
+

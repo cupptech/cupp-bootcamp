@@ -1,0 +1,62 @@
+Adding Your Own Features with High Quality
+
+## Planning a new feature
+
+	users admin
+	products admin
+
+## Implementing the solution
+
+	client/app/admin/admin.html
+	client/app/admin/admin.controller.js
+
+## Testing the new feature
+
+	AngularJS testing
+
+	client/app/admin/admin.controller.spec.js
+
+## Deploying a new version of the app
+
+	We are going to use a deployment tool called
+	Capistrano to ease the task of deploying new versions of our app. We are also aiming
+	for zero-downtime upgrades.
+
+	Zero-downtime deployments
+	It's not convenient for users to see a message, such as Site down for maintenance, so
+	we are going to avoid that at all costs. We would also like to able to update our app
+	as often as needed without the users even noticing. This can be accomplished with
+	a zero-downtime architecture. Using two node applications, we can update one first
+	while the other is still serving new requests. Then, we update the second app while
+	the updated first app starts serving clients. That way, there's always an instance of
+	the application serving the clients.
+
+	Setting up the zero-downtime production server
+
+	Getting started with Capistrano
+
+	Capistrano is a remote multi-server automation tool that will allow us to deploy
+	our app in different environments such as Staging/QA and production. Also, we
+	can update our app as often as needed without worrying about the users getting
+	dropped.
+
+	Installing Capistrano
+
+		sudo apt-get install ruby
+
+		We can install Capistrano as follows:
+			gem install Capistrano -v 3.4.0
+
+		Now we can bootstrap it in the meanshop folder:
+			cap install		
+
+	Understanding Capistrano
+
+	The way Capistrano works is through tasks (rake tasks). Those tasks perform
+	operations on servers such as installing programs, pulling code from a repository,
+	restarting a service, and much more. Basically, we can automate any action that we
+	can perform through a remote shell (SSH). We can scaffold the basic files running
+	cap install.
+
+	Full documentation on Capistrano can be found at http://capistranorb.com.
+

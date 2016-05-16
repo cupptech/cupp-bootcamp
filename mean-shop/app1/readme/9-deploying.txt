@@ -1,0 +1,224 @@
+Deploying a Production-ready e-Commerce App
+
+## Building for production
+
+	Application environments
+
+		• Development: The application is rebuilt in this stage to reflect any code
+		change in the UI.
+		• Testing: This is used to exercise the full test suite. It usually runs in
+		Continuous Integration (CI) servers or the developers run it on-demand in
+		their environments.
+		• Production: All the files and images are optimized to a reduced size and
+		bandwidth utilization. The code is considered stable and ready to serve the
+		end users.
+		• Acceptance (triage, staging): This is identical to the production environment,
+		but the developers interact with new features before releasing it to real users
+		in production. It might have a snapshot of the real production database.	
+
+	Optimizations for production environments
+
+		• Minification: This is done to remove comments and unnecessary blank
+		spaces from the CSS and JavaScript files. A further minification for the JS
+		files is to rename the variables as a letter. The smaller the size, the larger the
+		bandwidth savings.
+		• Concatenation: The aim of concatenation is to reduce the number of server
+		requests. All CSS files are concatenated into one single file; similarly, all JS
+		files are concatenated into a single file. That way, the server only serves a
+		few files instead of dozens or even hundreds in large projects. The fewer the
+		requests, the faster the browser loads the page.
+		• Using CDN for assets: The idea behind using CDN for assets is to load
+		resources from different servers in a browser in parallel, while resources
+		from the same server are loaded one at a time. Using CDN not only allows
+		the browser to load files in parallel, but it also leverages the browser's cache.
+		Since CDNs are often used across many websites, they are often cached in the
+		browser for future use.
+
+	Scaling web applications
+
+		• Vertical scale: This is the simplest scaling. It involves upgrading the server
+		with more resources such as CPU, RAM, HDD, I/O, and more.
+		• Horizontal scale: This is more complicated, but also better in the long run. It
+		involves distributing the load across multiple servers instead of just one.	
+
+## Platform as a Service
+
+	Platform as a service (PaaS) is a convenient type of cloud computing. It allows us
+	to quickly deploy applications without having to spend time setting up servers. The
+	platform is configured to support a number of different types of applications.
+
+Heroku
+
+	Heroku requires installing a command-line program called heroku-toolbelt.
+	Follow the instructions on https://toolbelt.heroku.com to install it. We also
+	need to create an account in Heroku. Then, we will be able to log in through the
+	command-line by typing: heroku login.
+
+	$ grunt build
+	$ yo angular-fullstack:heroku
+	$ cd dist && heroku addons:create mongolab:sandbox
+
+	We also need to set the environment variables. Set NODE_ENV and all variables that
+	you have on local.env.js to heroku:
+
+	$ heroku config:set NODE_ENV=production
+	# add all the social networks IDs and secrets.e.g.:
+	$ heroku config:set FACEBOOK_ID=appId FACEBOOK_SECRET=secret
+	# visualize all the set variables with
+	$ heroku config
+	Finally, you can open the application by running it with the following command:
+	$ heroku open
+	Any other update can be refreshed on Heroku by typing the following command:
+	$ grunt buildcontrol:heroku	
+
+
+Digital Ocean (VPS)
+
+	After you sign up, go ahead and create a 512 MB/1 CPU droplet (server instance)
+	using Ubuntu 14.04 x64:
+
+	Choose the region that is closest to you, in my case, New York. In the settings, select
+	enable private network. Once you click, you create a droplet. After a minute or so,
+	you will receive an e-mail with the password for the root username.
+
+	Create another droplet, this time called meanshop-web, with exactly the same
+	settings. Next, go to the droplet menu, and get the Public and Private IP addresses
+	for each one under settings.
+
+	Once you log in as the root user, you can create a new user with sudo privileges as
+	follows:
+	adduser YOUR_USERNAME
+	gpasswd –a YOUR_USERNAME sudo
+	sudo - YOUR_USERNAME
+
+## Deploying applications in a multi-server environment
+
+	we going to deploy our app in two servers: one server
+	containing Nginx that serves as the load balancer and another server that contains
+	the NodeJS app and the database.
+
+	Setting up the app server – NodeJS application
+
+	Once you ssh into the app server, install the project dependencies and NodeJS through nvm:
+
+		$ sudo apt-get update
+		$ sudo apt-get install -y build-essential openssl libssl-dev pkg-config
+		git-core mongodb ruby
+		$ curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/
+		install.sh | bash
+		$ source ~/.bashrc
+		$ nvm install 0.12.7
+		$ nvm use 0.12.7
+		$ nvm alias default 0.12.7
+		$ node -v
+
+	If you have been using GitHub for your code changes, you can do something like this:
+
+		cd && git clone https://github.com/cupptech/meanshop.git
+
+	Once in the directory, install all the packages, as well as some other dependencies
+	like SASS and grunt-cli, and run the app:
+
+		npm install -g grunt-cli bower pm2
+		npm install
+		bower install
+		npm install grunt-contrib-imagemin
+		sudo gem install sass
+		# and finally:
+		grunt build
+
+	To run our application in the production mode, we need to set the production
+	environment, and run the app from the dist folder:
+
+	NODE_ENV=production node dist/server/app.js		
+
+	We can go to our browser, and type http://ip-address:8080 to see our application!
+
+	Let's permanently set our server to production. Add NODE_ENV to the very end
+	of this file:
+
+		sudo vi /etc/environment	
+
+	Load the environment values by relogging into the shell:
+
+		sudo su - $USER
+		echo $NODE_ENV	
+
+	You should see the word production. A further improvement could be to use pm2 to
+	daemonize the application:
+		
+		pm2 start ~/meanshop/dist/server/app.js
+
+	We can also add it to the start-up phase, so every time the server boots up, it starts
+	the application immediately:
+
+	pm2 startup ubuntu
+	# run the generated command line and then:
+	pm2 save
+
+Other useful commands are as follows:
+
+	pm2 list
+	pm2 monit
+	pm2 logs
+
+## Setting up web server – Nginx server
+
+	Nginx is a high performance web
+	server. We are going to use it as our reverse proxy and load balancer:	
+
+	sudo apt-get update
+	sudo apt-get install -y nginx
+
+	If we go to our browser and type the public IP address of the second server, we can
+	see that Nginx is already serving a default page on port 80. The configuration file is
+	at the following location:
+
+	sudo vi /etc/nginx/sites-available/default	
+
+	In the upstream block, we can add as many node applications as we want. Nginx will
+	act as the load balancer, and it will forward the request to one of the servers listed in
+	turn. However, if we add a new application server instance, we will need to move
+	the database to a different server so that all node instances reference the same data.	
+
+## Performing stress tests
+
+	HTTP benchmarking tools
+	The HTTP benchmarking tools are designed to generate a number of concurrent
+	requests, evaluate how long the server takes to process it, and to capture failures.
+	One common tool that works great for this case is ApacheBench.
+
+	ApacheBench
+
+	ApacheBench (ab) not only generates concurrent requests, but it also generates
+	a report on the time taken to process the requests, errors, request per seconds,
+	and so on.
+
+	In Ubuntu, we can do it using the following command:
+		
+		sudo apt-get install apache2-utils
+
+	Benchmarking Heroku deployment
+		around 95 req/sec
+
+	Benchmarking VPS multi-server deployment
+		400 req/sec
+
+## Production architecture for scaling NodeJS
+
+	Phase 0 – one server
+
+	Phase 1 – multiple application instances in one server
+
+	Phase 2 – multiple servers
+
+	Phase 3 – Micro-services
+
+Next steps on security
+
+	In this chapter, it is not possible to cover all the aspects of production servers, since
+	it is a very broad topic. Another extensive topic is security; we are going to provide
+	some resources to continue exploring that at; https://www.owasp.org/index.php/
+	Web_Application_Security_Testing_Cheat_Sheet.
+
+

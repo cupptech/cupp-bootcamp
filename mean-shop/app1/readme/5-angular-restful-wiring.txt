@@ -1,0 +1,168 @@
+Wiring AngularJS with ExpressJS REST API
+
+## Implementing a RESTful product service
+
+	We are going to use ngResource, which is an Angular service for communicating with RESTful APIs.
+
+	client/app/products/products.service.js
+
+		angular.module('meanshopApp')
+			.factory('Product', function ($resource) {
+				return $resource('/api/products/:id', null, {
+				'update': { method: 'PUT'}
+			});
+		});	
+
+	That's it! That's all we need to connect with the backend. Notice that we use
+	$resource to pass the URL of the API endpoint, in our case /api/products/:id.
+	The second parameter is the default value for the URL. Finally, the last parameter
+	defines the custom actions that extend the default set of actions. We added the
+	update action, because the default actions do not include it. Here's a list of the
+	default actions:
+
+		{ 'get': {method:'GET'},
+		'save': {method:'POST'},
+		'query': {method:'GET', isArray:true},
+		'remove': {method:'DELETE'},
+		'delete': {method:'DELETE'} };	
+
+	client/app/main/main.controller.js
+
+		$scope.products = Product.query();
+
+## Wiring the product controller with new RESTful methods
+
+	client/app/products/products.controller.js
+
+## Uploading product images
+
+	For the frontend, we are going to use ng-file-upload, 
+	and for the backend, we are going to use a middleware called connect-multiparty.	
+
+	Uploading files in Angular:
+
+		ng-file-upload:
+		This library has useful features such as drag and drop, validation, file upload
+		progress, cancel ongoing upload, and more.
+
+		bower install ng-file-upload --save
+		bower install ng-file-upload-shim --save
+
+		'ngFileUpload'
+
+		client/app/products/templates/_product_form.html
+
+			<button accept="image/*" ngf-max-size="15MB" type="file"
+			class="btn btn-primary" ngf-select="upload($file)">Upload on
+			file select</button>		
+
+		client/app/products/products.scss
+			Add styling.
+
+		client/app/products/products.controller.js
+			file.upload = Upload.upload({
+				url: '/api/products/'+$scope.product._id+'/upload',
+				file: file
+			});			
+
+## Handling file upload on Node
+
+	When the client side sends a POST request with an image, we need to add the code
+	to handle that. Let's start by installing a file handler:
+
+		npm install connect-multiparty --save
+
+	server/api/product/index.js
+
+		var uploadOptions = { autoFile: true,
+					  		uploadDir: 'client/assets/uploads/'
+		}
+		var multiparty = require('connect-multiparty');
+		router.post('/:id/upload', multiparty(uploadOptions), controller.upload);
+
+	server/api/product/product.controller.js
+
+	server/api/product/product.model.js
+
+### Seeding products
+
+	server/config/seed.js
+
+### Testing RESTful APIs in AngularJS
+
+	Unit testing
+
+	In the service unit test, we just test the factory logic
+	with no dependencies on other parts such as a database or RESTful API. For that,
+	we are going to send mock HTTP calls with $httpBackend, and inject data into the
+	controllers using ngMock.
+
+	ngMock
+
+	ngMock is a mocking module from the AngularJS core that helps us in injecting
+	variables into the tests and mock AngularJS services. It also provides the ability to
+	inspect them. Some of the services that ngMock provides are:
+
+		• $httpBackend: This is a fake HTTP backend which can reply to requests
+		with predefined responses. For example, $httpBackend.expectGET('/products').respond({title: 'book'}).
+		• $controller: This is useful for testing controllers and directives. For
+		example, var instanceController = $controller('ProductsCtrl', {$scope: scope});.
+		• Other mock services: $timeout, $interval, $log, and $exceptionHandler.
+
+	Setting up testing
+
+	Run all client and server unit tests:
+		grunt test
+
+	e2e test:
+		webdriver-manager update
+		$ mkdir -p e2e/products
+		$ touch e2e/products/product{s.spec,.po}.js
+		grunt test:e2e
+
+	Understanding the Services tests
+
+		client/app/products/products.service.spec.js
+
+			Most of the tests will look the same: we expect an
+			$http call with a specific URL and HTTP verb to be made. In this case, the URL is /
+			api/products and the verb is GET. The real $http is synchronous; however, the
+			$httpBackend is not for easing the testing scenarios. It uses $httpBackend.flush()
+			to check the replies to the HTTP requests synchronously.
+
+		grunt test:client
+
+	Testing the Product Controller
+
+		client/app/products/products.controller.spec.js
+
+		• In AngularJS, all controller's scope inherit from $rootScope. We can create
+		sub-scopes using the $new method. We create a new scope on each controller,
+		and pass it using the $controller function.
+		• We mock the Products service with SinonJS. Check out http://sinonjs.
+		org/ for full details.		
+
+	End-to-end testing
+
+		$ grunt test:e2e
+
+		• /e2e/main/main.spec.js
+		• e2e/products/product.po.js
+		• e2e/products/products.spec.js
+
+		As we can notice, we can fill out forms (sendKeys), click on buttons and links
+		(click), get URLs (browser.getCurrentUrl), and perform many more other
+		actions. The e2e tests take more time than unit tests. Thus, instead of each one being
+		independent of each other, each test prepares the next one: create product | read
+		product | update product | delete product.
+
+	Cleaning the database on each e2e run
+
+		Gruntfile.js
+
+			mongoose.connection.db.dropDatabase(function (err) {
+
+
+
+
+

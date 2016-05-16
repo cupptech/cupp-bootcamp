@@ -1,0 +1,217 @@
+Building an Amazing Store Frontend with AngularJS
+
+	AngularJS has many built-in features that make it an excellent candidate for developing Single Page Applications (SPA) and Data-Driven Applications.
+
+	AngularJS is a very capable Model-View-Controller (MVC) framework. MVC is a UI architectural pattern which separates the view from the data models and binds them through controllers. Angular 1.x implements a two-way data binding that always keeps the view (HTML) and models (JavaScript) in sync. Thus, AngularJS models are the single source of truth. Another nice feature is that AngularJS provides XHR services, which make it very easy to integrate with the RESTful APIs.
+
+## Understanding AngularJS and the client directory structure
+
+	mongod
+	grunt serve
+	http://localhost:9000
+
+	Client-side structure:
+
+		client
+		├── app - All of our app specific components go in here
+		├── assets - Custom assets: fonts, images, and so on
+		├── components - Reusable components, non-specific to our app
+		└── index.html
+
+	Component structure:	
+
+		meanshop/client/app/main
+		├── main.js - Routes
+		├── main.controller.js - Controller
+		├── main.controller.spec.js - Test
+		├── main.html - View
+		└── main.scss - Styles
+
+	index.html
+		The ng-app directive is necessary for bootstrapping AngularJS automatically. It defines the root module of the application.
+
+		<div ui-view=""></div>
+		This div element is where a module called ui-router pushes the HTML code.
+
+		The app.js file is the entry point of the application.
+
+	Modules
+		Modules Modules are the preferred way for organizing code in AngularJS.
+		Config: This executes at the time of loading of a module.
+		Run: This executes when all the modules are done loading
+
+	Routing with AngularUI router
+		Routing allows the user to have a URL that reflects the current state of the application.
+		Single Page Applications (SPAs) could have all the different pages with just one unchangeable URL.
+		ui-router, which is going to pair URLs and states with HTML views and controllers.
+
+		client/app/main/main.js
+
+			angular.module('meanshopApp')
+			.config(function ($stateProvider) {
+			$stateProvider
+			.state('main', {
+			url: '/',
+			templateUrl: 'app/main/main.html',
+			controller: 'MainCtrl'
+			});
+			});		
+
+	Controllers and scopes
+
+		Controllers are the ones that are responsible for loading the data and representing it in the HTML templates (Views).
+
+		main.controller.js
+
+		What is $scope? It is an object that glues the controller to the views. It provides
+		two-way data binding. Every time we update a variable in $scope, it automatically
+		rerenders the HTML view. Similarly, every time a change is made in the HTML,
+		its value representation gets updated.
+
+	Templates
+
+		Templates are the HTML files mixed with AngularJS enhancements. They execute
+		the JS expressions, reference variables, and functions in the $scope.
+
+		client/main/main.html
+
+## Laying out the e-commerce MVP
+
+### Products:
+
+	create the page that will hold all the products.
+
+		$ yo angular-fullstack:route products
+
+		? Where would you like to create this route? client/app/
+		? What will the url of your route be? /products
+		create client/app/products/products.js
+		create client/app/products/products.controller.js
+		create client/app/products/products.controller.spec.js
+		create client/app/products/products.html
+		create client/app/products/products.scss	
+
+		grunt serve
+		http://localhost:9000/products
+
+	client/components/navbar/navbar.controller.js, add it to main menu
+
+	    $scope.menu = [{
+	      'title': 'Home',
+	      'link': '/'
+	    }, {
+	      'title': 'Products',
+	      'link': '/products'
+	    }];
+
+	client/components/navbar/navbar.html
+
+### Creating the products factory
+
+	$ yo angular-fullstack:factory products
+	
+	? Where would you like to create this factory? client/app/
+	create client/app/products/products.service.js
+	create client/app/products/products.service.spec.js	
+
+	Since we do not have the web server ready yet, we are going to use an array to hold the data.
+
+		client/app/products/products.service.js
+
+	Inject the product factory into the controller	
+
+		client/app/products/products.controller.js
+
+## Creating the marketplace
+
+	Use the products variable exposed in $scope in our template, and do some styling on products.html:
+
+		clients/app/products/products.html
+
+		ui-sref: This one invokes the state specified, and passes the parameters
+		that are going to match the URL defined in the routes, in this case
+		/products/:id. The :id is going to be replaced by product._id as
+		indicated in the parameter.
+
+	Run grunt serve and go to: http://localhost:9000/products.
+
+## Filters
+
+	Filters allow modifying the output of an expression into another one. We can also
+	chain multiple filters. They can be used either in the DOM with the pipe | inside an
+	expression, or using the $filter service.	
+
+## CRUD-ing products with AngularJS
+
+	We will build a server-less CRUD; the data will be stored in memory. Will replace by $http service later.
+
+	clients/app/products/products.service.js
+
+		Query to return all the products
+		get to get a single product from the collection
+		Edit, create, and update
+
+		We needed five main public methods in our service: create, update, delete,
+		and read (get and query). We are using a simple array of objects as a poor man's
+		database. Notice that nothing from outside the factory will be able to access
+		example_products. This variable is private, while all the methods in the returned
+		object are public. This technique is called closure.
+
+		By convention, the names of services/factories are capitalized. For
+		example, Products.
+
+	client/app/products/products.service.spec.js
+
+		grunt test
+
+	clients/app/products/products.controller.js
+
+		Set up controllers to use the Products service.
+
+		$state allows us to redirect to a different state or route, 
+		while $stateParams is an object that contains all the variables from the URL (for example, product id).
+
+	Routes:
+
+		Now that we have the controllers and services in place, we need a route that links a
+		URL to the controllers and templates.
+
+		For instance, suppose we want to show the detail of each product that we click on.
+		For that, we need to set a new route like /products/:id and a template. We will
+		use the controller that we created to fetch the products' detailed data, and inject the
+		needed variables into the template. For adding new products and editing the existing
+		ones, the URL will be unique as well		
+
+		meanshop/clients/app/products/products.js
+
+			products
+			viewProduct
+			newProduct
+			editProduct
+
+	Templates
+
+		Templates are the actual HTML code.
+
+		Create a partial template file called _product_form.html that we will include in the edit and new templates.
+
+		$ touch _product_form.html
+		$ touch product-{new,edit,view}.html
+
+	Styling the main page
+
+		client/app/main/main.html
+
+			Show last products as featured.
+			adding the link to add new products
+
+		client/app/main/main.controller.js
+
+			$scope.products = Product.query().slice(3);
+
+
+
+
+
+
+

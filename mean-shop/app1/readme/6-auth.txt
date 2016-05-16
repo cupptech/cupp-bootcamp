@@ -1,0 +1,323 @@
+Managing User Authentication and Authorization
+
+	The application should keep track of the authenticated users; however, web requests are stateless. 
+
+	Each request is treated as an unrelated transaction to any previous request. There are multiple workarounds to keep track of logged users such as sessions, cookies, and tokens. 
+
+	Once we solve the authentication needs, another important feature is authorization. It dictates what the users can see and do inside the app. 
+
+	Authorization assigns roles to the users. For instance, a seller should be able to edit his/her own products but not anyone else's. However, administrators should be able to edit/delete any product that they find inappropriate.
+
+	Modern applications allow logins not only through usernames and passwords, but also through social networks. This latter strategy of authentication usually uses OAuth, which is an open protocol that enables secure authentication through third-party applications.
+
+
+## Getting started with authentication strategies
+
+Session-based authentication
+
+	It uses cookies to save a session ID that is usually related to the user
+	ID. Once the user is logged in, the session ID is passed on each request.	
+	
+		1. The browser sends a POST request to the server with the username and password.
+		2. If the username/password combination matches the records, the server
+		responds with a cookie containing the session ID, and it is stored locally in the
+		browser's cookie, session, or local storage.
+		3. From that time onwards, the browser will include the cookie session at each request.
+		4. The server verifies the authenticity of the cookie's session ID and replies
+		accordingly.
+
+Token-based authentication – using JWT
+	
+	Token-based authentication uses JSON web tokens instead of cookies. Once the user
+	is logged in, a token is added to the HTTP header of each request to validate the user.
+
+	The main difference is that instead of relying on cookies, it uses an HTTP header to
+	send the authentication token.
+
+		1. The browser sends a POST request to the server with the username and
+		password.
+		2. If the username/password combination matches the records, the server
+		responds with a JSON Web Token (JWT) containing the user data, and it is
+		stored locally in the browser's cookie, session, or local storage.
+		3. From that time onwards, the client needs to add the HTTP header,
+		Authentication: Bearer TOKEN.
+		4. The server verifies the authenticity of the authentication token in the HTTP
+		header and replies accordingly. Note that the cookie is not used for
+		authentication purposes in this strategy.
+
+There are great advantages of using JWT over session-based
+authentication such as the following:
+
+	• Cross-Origin Resource Sharing (CORS): Cookie-based authentication and
+	AJAX don't play very well across multiple domains. On the other hand,
+	token-based authentication works seamlessly.
+	• Scalability: Session IDs need to be stored in the server which implies some
+	challenges when using distributed applications, and it also adds some lookup
+	latency. JWTs are self-signed, and any instance of the server can validate its
+	authenticity. The servers just need to share the private key.
+	• Mobile: Cookies are not ideal for working with mobile devices and secured
+	APIs. The token approach simplifies this a lot.
+	• Security: There is no need to worry about CSRF (Cross-site request forgery),
+	since no cookies are used.
+	• Others advantages: JWT is performance and standard-based.
+
+	For a deeper understanding about how JWT works, take a look at http://jwt.io/.
+
+OAuth authentication
+
+	OAuth-based authentication is popular on social networks for allowing third-party
+	applications to provide a single sign-on.
+
+		1. Ahead of time, the application needs to gets registered with the OAuth
+		Provider (in this case, Twitter) to get its API credentials: consumer key and
+		secret. Moreover, it needs to set a callback URL to redirect the users back to
+		the application.
+		2. The user has to log in/register by clicking the Connect with Twitter button.
+		3. The app asks for a Request Token from the OAuth provider. Along with the
+		request, the app sends its consumer key and secret to get properly identified.
+		4. The provider (Twitter) verifies the consumer key, secret and request URL; if
+		everything matches with the registered records, it grants a Request Token.
+		5. The app saves the Request Token, and redirects the user to the provider
+		website.
+		6. The provider website prompts the user to provide authorization.
+		7. Once the user has authorized the OAuth provider to share data with the app,
+		the provider redirects the user back to the application using the callback URL
+		along with the oauth_verifier.
+		8. The app uses the oauth_verifier to exchange the Request Token for an
+		Access Token. The provider grants the Access Token along with the user's
+		profile data.
+		9. At this point, the user is registered/logged in the app with the profile data
+		fetched from the OAuth Provider, and a session ID is created.
+		10. From that time on, all the requests from the user to the app will use the
+		session ID.	
+
+
+## Understanding client-side authentication
+
+	Authentication is one of the most important parts of our e-commerce application.
+	It not only allows the users to log in, sign up, sign in and sign out, but also allows
+	the app to keep a track of sellers and buyers of each product.
+
+	Authentication management
+
+		client/app/account/account.js
+
+			authenticate: true
+
+			By itself, authenticate: true does nothing. In order to check if the user is
+			authenticated, we need to intercept the route change event just before rendering the
+			template. We are doing just that at the very bottom of app.js.
+
+		client/app/app.js
+
+			Finally, as we discussed in the section on token-based authentication, having a
+			cookie with the token is not what matters; what is required is having the token in the
+			HTTP header. Instead of doing that manually on every $http call, we can do it in
+			app.js using an Angular interceptor, as shown in the following code:
+
+			$httpProvider.interceptors.push('authInterceptor');
+
+			• If there's a cookie with a token, we use it to set the authentication HTTP
+			header
+			• If the token used for authentication is invalid, we discard the cookie with the
+			token and redirect to the login page
+			• We use interceptors for handling the authentication before they are sent
+			to the server and intercept the responses before they are handled by the
+			application
+
+
+	The signing up process
+
+		client/app/account/signup/signup.controller.js
+
+			This controller, along with the signup.html form, allows users to register either by
+			using the name/e-mail/password form or through a social network provider.
+
+		client/components/auth/auth.service.js
+
+			Sign up/in is possible thanks to the user and auth services that define all the
+			methods related to authentication on the frontend.
+
+			• $cookieStore.get/set is used to manipulate the cookies and to store the
+			JSON Web Token in it
+			• Both, Login and createUser, set the $cookieStore parameter of the
+			logged user, while logout removes the created cookie
+
+		client/components/auth/user.service.js
+
+			User.get() is very often called in the Auth service. This method sets the ID to me
+			for generating a called GET /api/users/me. The server identifies the user me by the
+			information contained in the token.
+
+## Understanding server-side authentication
+
+	• Passport: Authentication module for NodeJS
+	• Passport-local: Username and password authentication strategy for
+	Passport and Node.js
+	• Passport-facebook: Facebook authentication strategy
+	• Passport-twitter: Twitter authentication strategy
+	• Passport-google-oauth: Google (OAuth) authentication strategies
+	• Jsonwebtoken: Implementation of the JSON Web Token (JWT) standard. It is
+	used to send encrypted JSON with sensitive data
+	• Express-jwt: Express middleware to authenticate HTTP requests using JWT
+	(JSON Web Token) and sets req.user
+
+	Authentication with PassportJS
+
+		PassportJS is an npm module that can be added to the ExpressJS middlewares. It
+		uses sessions to provide the user login functionality, and supports more than 300
+		authentication strategies.
+
+	Initializing PassportJS
+
+		When we run grunt serve or npm start, it executes node server/app.js.
+
+		server/config/express.js
+		The express.js file initializes the PassportJS, and sets up the session:
+
+			var passport = require('passport');
+			app.use(passport.initialize());
+
+			The first step for enabling Passport is to add it to the middleware chain using
+			passport.initialize().
+
+			app.use(session({
+			secret: config.secrets.session,
+			resave: true,
+			saveUninitialized: true,
+			store: new mongoStore({
+			mongooseConnection: mongoose.connection,
+			db: 'meanshop'
+			})
+			}));
+
+			Next, we use the express-session middleware to set up our sessions. Only the
+			session ID is stored in a cookie and not the session data. The ID is used to retrieve
+			the data stored on the server side. Let us take a look at the meaning of the parameters
+			passed:
+
+			• Secret: This is a string that is used to generate the session ID cookie.
+			• Resave: This forces the session to always save back to the server even if it
+			has not been modified.
+			• SaveUninitialized: This is a session which is uninitialized when it is
+			new. This option forces the session to be saved even when it is new and
+			unmodified.
+			• Store: This is where the session data is saved. By default, it is stored in the
+			memory (MemoryStore). However, we are using MongoDB instead with
+			connect-mongo. Another popular storage option is (connect-redis) Redis.
+
+			MemoryStore and MongoStore are two different strategies for saving
+			sessions. In the first one, the sessions data is stored in the memory of
+			the server. That can cause scaling across multiple servers, since memory
+			is separate on each server. Furthermore, it can consume a significant
+			amount of memory if there are many concurrent users. On the other
+			hand, MongoStore, is a better solution. Sessions can scale as we scale
+			the database, and it is shared across multiple servers.
+
+	The user model
+		server/api/user/user.model.js
+		with all the methods that we need for authentication and validations.
+
+		A plain text password should never be saved to the database. Thus, we are always
+		saving the encrypted version of the password. Furthermore, a salt parameter is
+		added to the password encryption mechanism for extra security.
+
+		Password salt
+		The purpose of adding a salt is to protect the users with a simple
+		password (dictionary words). Salt is random data generated to be
+		used along with the password in the one-way hashing function. The
+		end result is an encrypted password, which is the one that is stored in
+		the database.	
+
+## Authentication strategies and routes
+
+	They are all contained inside the auth folder, and have two files inside:
+	• index.js: This file defines the routes
+	• passport.js: This file defines the strategies	
+
+	To begin with the routes, open routes.js. All the authentication strategies will be
+	mapped under the /auth path:
+
+		app.use('/auth', require('./auth'));
+
+	When we expand ./auth routes, we see that we have one for any strategy that we
+	want to support: local, Facebook, Twitter, and Google:
+
+		router.use('/local', require('./local'));
+		router.use('/facebook', require('./facebook'));
+		router.use('/twitter', require('./twitter'));
+		router.use('/google', require('./google'));
+
+	To sum up, the preceding code will yield the following routes:
+	• Local authentication: /auth/local
+	• Facebook authentication: /auth/facebook
+	• General path: /auth/:provider
+
+	Local authentication:
+
+	Setting up local authentication or any other kind of authentication involves two steps:
+	1. Defining the strategy with passport.use:
+		server/auth/local/passport.js
+	2. Adding the strategy to the route with passport.authenticate
+		server/auth/local/index.js
+
+	Passport.use defines the method to validate that the e-mail/password combination
+	is correct. This is done by finding the user by e-mail, and then encrypting the plain
+	text password and verifying if it matches with the one in the database. If the e-mail is
+	found and there's a match in the password, then the user is authenticated; otherwise,
+	it throws an error.
+
+	Passport.authenticate is used to associate an authentication strategy with a route.
+
+	End-to-end tests for local authentication
+
+	To make sure that users can sign in and out at all times, we are going to add
+	automated testing.
+
+		e2e/account/signup/signup.spec.js, 
+		e2e/account/login/login.spec.js, 
+		e2e/account/logout/logout.spec.js
+
+## Authenticating with Facebook, Google, and Twitter
+
+	Facebook
+	We need to go to the Facebook Developers site (https://developers.facebook.com)
+	to register the app. Go to My Apps | Settings | Basic, and get App ID and App Secret.
+	We also need to the site URL to http://localhost:9000/.
+	
+	In case you need to set up the callback URL you can use http://localhost:9000/
+	auth/facebook/callback.
+	Once you have the ID and secret, go to local.env.js, and fill it out.
+	
+	In the facebook/passport.js (passport.use), this time we look up the users by
+	facebook.id instead of e-mail:
+
+		User.findOne({
+			'facebook.id': profile.id
+		},
+
+	Twitter
+
+	Let's go to the Twitter Developers' site at https://apps.twitter.com, and get our
+	app registered. This time, use the following callback URL: http://127.0.0.1:9000/
+	auth/twitter/callback.
+
+	Furthermore, you need to go to the settings tab and enable Sign in with Twitter.
+	
+	Then, fill out the App ID and secret in local.env.js. Take a look at twitter/
+	passport.js and twitter/index.js. They are almost identical to the ones in
+	Facebook. The main difference is that Twitter doesn't have scopes.
+
+	Google
+
+	Create our app at https://console.developers.google.com/project. Use the
+	URL and callback using 127.0.0.1 or localhost as shown in the following image:
+
+	1. Furthermore, you need to go to API & auth | APIs, and enable Google+ API.
+	2. Later, click on Explore this API, and enable Authorize requests using OAuth 2.0
+
+	Again, fill out the local.env.js with it, and take a look at the google/passport.js
+	and google/index.js.
+
+
+
