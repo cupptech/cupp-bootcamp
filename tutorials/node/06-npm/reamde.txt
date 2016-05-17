@@ -1,0 +1,60 @@
+NPM
+
+	https://www.npmjs.com/
+	npm is the package manager for javascript.
+
+Installing and Using Packages
+
+	Use 'npm install' to install a package
+	Use 'require()' to include a package
+
+Package
+	
+	The code managed and maintained with a package management system.
+
+Package management system
+
+	Software that automates installing and updating packages.
+
+	Deals with what version you have or need.
+
+Dependency
+
+	Code that another set of code depends on to function.
+
+Semantic Versioning (semver)
+
+	http://semver.org/
+
+	Major.Minor.Patch
+
+	Patch: Fixed bugs.
+	Minor: Some new features were added. Your code will work fine.
+	Major: Big changes. You code will break (maybe).
+
+npm Global Installation
+
+	npm install -g nodemon
+	nodemon app.js
+
+	npm ls -g
+
+	Global installation path on Windows:
+	C:\Users\user1\AppData\Roaming\npm\node_modules\nodemon
+
+	Fixing npm permissions
+	https://docs.npmjs.com/getting-started/fixing-npm-permissions
+
+Uninstalling a module
+	
+	$ npm uninstall express
+
+Updating a module
+
+	Update package.json and change the version of the dependency which to be updated and run the following command.
+
+	$ npm update express
+
+Generate package.json
+
+	$ npm init

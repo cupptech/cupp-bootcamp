@@ -73,6 +73,11 @@ node-inspector
 	Node-inspector will only work on browsers that use the Blink
 	engine, such as Google Chrome or Opera.
 
+	$ grunt debug
+
+	http://127.0.0.1:8080/debug?port=5858
+	
+
 Debugging AngularJS with Batarang
 	
 	Batarang Models
